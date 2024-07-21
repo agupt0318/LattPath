@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{4DDF4E96-4372-49C5-A26A-E4E86C67F315}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>HSR_2023_24</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="HSR_2023_24.cpp" />
+    <ClCompile Include="LatticeDstarPathplanning\lib\matplotlib\Python.cpp" />
+    <ClCompile Include="LatticeDstarPathplanning\src\GraphBuilder\Graph.cpp" />
+    <ClCompile Include="LatticeDstarPathplanning\src\VehicleTypes\AutonomousCar.cpp" />
+    <ClCompile Include="LatticeDstarPathplanning\src\VehicleTypes\ManualCar.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="LatticeDstarPathplanning\lib\matplotlib\matplotlibcpp.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\matplotlib\Python.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\allocators.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\cursorstreamwrapper.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\document.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\encodedstream.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\encodings.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\error\en.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\error\error.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\filereadstream.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\filewritestream.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\fwd.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\biginteger.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\clzll.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\diyfp.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\dtoa.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\ieee754.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\itoa.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\meta.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\pow10.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\regex.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\stack.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\strtod.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\internal\swap.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\istreamwrapper.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\memorybuffer.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\memorystream.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\msinttypes\inttypes.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\msinttypes\stdint.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\ostreamwrapper.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\pointer.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\prettywriter.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\rapidjson.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\reader.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\schema.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\stream.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\stringbuffer.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\uri.h" />
+    <ClInclude Include="LatticeDstarPathplanning\lib\rapidjson\writer.h" />
+    <ClInclude Include="LatticeDstarPathplanning\src\headers\GeneralUtils\Astar.h" />
+    <ClInclude Include="LatticeDstarPathplanning\src\headers\GeneralUtils\DFS.h" />
+    <ClInclude Include="LatticeDstarPathplanning\src\headers\GeneralUtils\DLite.cpp.h" />
+    <ClInclude Include="LatticeDstarPathplanning\src\headers\GeneralUtils\GeneralFuncs.h" />
+    <ClInclude Include="LatticeDstarPathplanning\src\headers\GraphUtils\GraphFuncs.h" />
+    <ClInclude Include="LatticeDstarPathplanning\src\headers\VehicleTypeUtils\VehicleTypeFuncs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="LatticeDstarPathplanning\results\AutonomousCar\" />
+    <Folder Include="LatticeDstarPathplanning\results\ManualCar\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="LatticeDstarPathplanning\lib\HuntingtonStationGraphCoords.csv" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
