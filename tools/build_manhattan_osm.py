@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+from collections import Counter, defaultdict
 import json
 import math
 import re
@@ -12,23 +13,7 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-FULL_BBOX = {
-    "west": -74.0300,
-    "south": 40.6990,
-    "east": -73.9000,
-    "north": 40.8820,
-}
-
-MIDTOWN_BBOX = {
-    "west": -74.0120,
-    "south": 40.7380,
-    "east": -73.9680,
-    "north": 40.7730,
-}
-
-FULL_GRID_WIDTH = 180
-MIDTOWN_GRID_WIDTH = 120
-MIDTOWN_AGENT_HEADING = 2
+DEFAULT_CITY_CONFIG = Path("configs/cities/manhattan.json")
 
 EXCLUDED_HIGHWAYS = {
     "bridleway",
@@ -60,51 +45,50 @@ ROAD_WIDTH = {
     "living_street": 1,
 }
 
-FULL_ROUTE_POINTS = {
-    "start": {"lat": 40.7046, "lon": -74.0150},
-    "goal": {"lat": 40.8738, "lon": -73.9264},
-}
-
-MIDTOWN_AGENT_POINTS = [
-    {
-        "id": "agent_1",
-        "start": {"lat": 40.7395, "lon": -74.0085},
-        "goal": {"lat": 40.7700, "lon": -73.9745},
-    },
-    {
-        "id": "agent_2",
-        "start": {"lat": 40.7395, "lon": -73.9735},
-        "goal": {"lat": 40.7700, "lon": -74.0045},
-    },
-    {
-        "id": "agent_3",
-        "start": {"lat": 40.7465, "lon": -74.0090},
-        "goal": {"lat": 40.7670, "lon": -73.9810},
-    },
-    {
-        "id": "agent_4",
-        "start": {"lat": 40.7440, "lon": -73.9750},
-        "goal": {"lat": 40.7645, "lon": -74.0010},
-    },
-    {
-        "id": "agent_5",
-        "start": {"lat": 40.7410, "lon": -74.0040},
-        "goal": {"lat": 40.7595, "lon": -73.9725},
-    },
-    {
-        "id": "agent_6",
-        "start": {"lat": 40.7420, "lon": -73.9785},
-        "goal": {"lat": 40.7615, "lon": -73.9995},
-    },
-]
+HEADING_VECTORS = (
+    (1, 0),
+    (1, 1),
+    (0, 1),
+    (-1, 1),
+    (-1, 0),
+    (-1, -1),
+    (0, -1),
+    (1, -1),
+)
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Download and rasterize Manhattan OpenStreetMap roads.")
+    parser = argparse.ArgumentParser(description="Download and rasterize a city OpenStreetMap driving network.")
+    parser.add_argument(
+        "--city-config",
+        type=Path,
+        default=DEFAULT_CITY_CONFIG,
+        help="City configuration JSON describing the region, route, and district agents.",
+    )
     parser.add_argument("--data-dir", type=Path, default=Path("data"), help="Directory for cached OSM tiles.")
     parser.add_argument("--artifacts-dir", type=Path, default=Path("artifacts"), help="Directory for generated outputs.")
     parser.add_argument("--pbf-file", type=Path, help="Optional local .osm.pbf extract to use instead of live tile downloads.")
     return parser.parse_args()
+
+
+def load_city_config(path: Path) -> dict:
+    config = json.loads(path.read_text(encoding="utf-8"))
+
+    required_top_level = ("city_id", "display_name", "full_bbox", "full_grid_width", "route", "district")
+    for key in required_top_level:
+        if key not in config:
+            raise ValueError(f"City config {path} is missing required key: {key}")
+
+    route = config["route"]
+    district = config["district"]
+    for key in ("scenario_name", "start", "goal"):
+        if key not in route:
+            raise ValueError(f"City config {path} route is missing required key: {key}")
+    for key in ("name", "scenario_name", "bbox", "agents"):
+        if key not in district:
+            raise ValueError(f"City config {path} district is missing required key: {key}")
+
+    return config
 
 
 def bbox_to_query(bbox: dict) -> str:
@@ -211,6 +195,43 @@ def load_osm(tile_paths: list) -> tuple:
     return nodes, ways
 
 
+def way_is_oneway(tags: dict) -> tuple:
+    value = str(tags.get("oneway", "")).strip().lower()
+    if value in {"yes", "true", "1"}:
+        return True, False
+    if value == "-1":
+        return True, True
+    if tags.get("junction", "").lower() == "roundabout":
+        return True, False
+    return False, False
+
+
+def extract_polylines_from_osm(nodes: dict, ways: dict) -> list:
+    polylines = []
+
+    for way in ways.values():
+        coords = []
+        for node_ref in way["nodes"]:
+            node = nodes.get(node_ref)
+            if node is not None:
+                coords.append((node["lon"], node["lat"]))
+
+        if len(coords) < 2:
+            continue
+
+        is_oneway, reverse = way_is_oneway(way["tags"])
+        if reverse:
+            coords = list(reversed(coords))
+
+        polylines.append({
+            "coords": coords,
+            "highway": way["tags"].get("highway", "residential"),
+            "bidirectional": not is_oneway,
+        })
+
+    return polylines
+
+
 def load_driving_polylines_from_pbf(pbf_path: Path, bbox: dict) -> tuple:
     try:
         import shapely  # noqa: F401
@@ -246,7 +267,11 @@ def load_driving_polylines_from_pbf(pbf_path: Path, bbox: dict) -> tuple:
         for line in geometries:
             coords = [(lon, lat) for lon, lat in line.coords]
             if len(coords) >= 2:
-                polylines.append({"coords": coords, "highway": highway or "residential"})
+                polylines.append({
+                    "coords": coords,
+                    "highway": highway or "residential",
+                    "bidirectional": False,
+                })
 
     return polylines, len(edges)
 
@@ -305,34 +330,38 @@ def draw_disk(grid: list, cell_x: int, cell_y: int, radius: int) -> None:
                 grid[y][x] = "."
 
 
-def rasterize_bbox(nodes: dict, ways: dict, bbox: dict, width: int) -> tuple:
-    height = infer_height(width, bbox)
-    grid = [["#" for _ in range(width)] for _ in range(height)]
+def heading_from_segment(start: tuple, end: tuple) -> int | None:
+    dx = end[0] - start[0]
+    dy = end[1] - start[1]
+    if dx == 0 and dy == 0:
+        return None
 
-    for way in ways.values():
-        points = []
-        for node_ref in way["nodes"]:
-            node = nodes.get(node_ref)
-            if node is None:
+    unit = (max(-1, min(1, dx)), max(-1, min(1, dy)))
+    for index, vector in enumerate(HEADING_VECTORS):
+        if vector == unit:
+            return index
+    return None
+
+
+def paint_heading_disk(grid: list, heading_counts: dict, cell_x: int, cell_y: int, radius: int, headings: list) -> None:
+    height = len(grid)
+    width = len(grid[0])
+    for offset_y in range(-radius, radius + 1):
+        for offset_x in range(-radius, radius + 1):
+            if (offset_x * offset_x) + (offset_y * offset_y) > radius * radius:
                 continue
-            if not (bbox["west"] <= node["lon"] <= bbox["east"] and bbox["south"] <= node["lat"] <= bbox["north"]):
-                continue
-            points.append(project_point(node["lat"], node["lon"], bbox, width, height))
-
-        if len(points) < 2:
-            continue
-
-        radius = ROAD_WIDTH.get(way["tags"].get("highway", ""), 1)
-        for start, end in zip(points, points[1:]):
-            for cell_x, cell_y in bresenham(start, end):
-                draw_disk(grid, cell_x, cell_y, radius)
-
-    return grid, height
+            x = cell_x + offset_x
+            y = cell_y + offset_y
+            if 0 <= x < width and 0 <= y < height:
+                grid[y][x] = "."
+                for heading in headings:
+                    heading_counts[(x, y)][heading] += 1
 
 
 def rasterize_polylines(polylines: list, bbox: dict, width: int) -> tuple:
     height = infer_height(width, bbox)
     grid = [["#" for _ in range(width)] for _ in range(height)]
+    heading_counts = defaultdict(Counter)
 
     for polyline in polylines:
         projected = [
@@ -346,10 +375,20 @@ def rasterize_polylines(polylines: list, bbox: dict, width: int) -> tuple:
 
         radius = ROAD_WIDTH.get(polyline["highway"], 1)
         for start, end in zip(projected, projected[1:]):
+            heading = heading_from_segment(start, end)
+            if heading is None:
+                continue
+            headings = [heading]
+            if polyline.get("bidirectional", False):
+                headings.append((heading + 4) % len(HEADING_VECTORS))
             for cell_x, cell_y in bresenham(start, end):
-                draw_disk(grid, cell_x, cell_y, radius)
+                paint_heading_disk(grid, heading_counts, cell_x, cell_y, radius, headings)
 
-    return grid, height
+    return grid, height, heading_counts
+
+
+def rasterize_bbox(nodes: dict, ways: dict, bbox: dict, width: int) -> tuple:
+    return rasterize_polylines(extract_polylines_from_osm(nodes, ways), bbox, width)
 
 
 def nearest_free_cell(grid: list, target_x: int, target_y: int) -> tuple:
@@ -394,6 +433,35 @@ def point_to_grid(point: dict, bbox: dict, grid: list) -> tuple:
     return nearest_free_cell(grid, x, y)
 
 
+def dominant_heading(heading_counts: dict, cell: tuple, fallback: int = 0) -> int:
+    counts = heading_counts.get(cell)
+    if not counts:
+        return fallback
+    return counts.most_common(1)[0][0]
+
+
+def crop_heading_counts(heading_counts: dict, crop: dict) -> dict:
+    cropped = defaultdict(Counter)
+    for (x, y), counts in heading_counts.items():
+        if crop["min_x"] <= x <= crop["max_x"] and crop["min_y"] <= y <= crop["max_y"]:
+            cropped[(x - crop["min_x"], y - crop["min_y"])].update(counts)
+    return cropped
+
+
+def serialize_heading_counts(heading_counts: dict) -> list:
+    cells = []
+    for (x, y), counts in sorted(heading_counts.items(), key=lambda item: (item[0][1], item[0][0])):
+        allowed = [heading for heading, _ in counts.most_common()]
+        cells.append({
+            "x": x,
+            "y": y,
+            "allowed_headings": allowed,
+            "dominant_heading": allowed[0],
+            "sample_count": int(sum(counts.values())),
+        })
+    return cells
+
+
 def write_scenario(path: Path, name: str, grid: list, start: tuple, goal: tuple) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     width = len(grid[0])
@@ -416,18 +484,41 @@ def write_agents(path: Path, agents: list) -> None:
     path.write_text(json.dumps({"agents": agents}, indent=2) + "\n", encoding="utf-8")
 
 
+def write_network(path: Path, scenario_name: str, width: int, height: int, heading_counts: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "scenario": scenario_name,
+        "width": width,
+        "height": height,
+        "cells": serialize_heading_counts(heading_counts),
+    }
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
 def main() -> None:
     args = parse_args()
+    city = load_city_config(args.city_config)
+    city_id = city["city_id"]
+    full_bbox = city["full_bbox"]
+    full_grid_width = int(city["full_grid_width"])
+    route = city["route"]
+    district = city["district"]
+    district_bbox = district["bbox"]
 
     metadata = {
-        "full_bbox": FULL_BBOX,
-        "midtown_bbox": MIDTOWN_BBOX,
+        "city_id": city_id,
+        "display_name": city["display_name"],
+        "city_config": str(args.city_config),
+        "full_bbox": full_bbox,
+        "district_bbox": district_bbox,
+        "route_scenario": route["scenario_name"],
+        "district_scenario": district["scenario_name"],
     }
 
     if args.pbf_file is not None:
-        print(f"Loading Manhattan driving network from {args.pbf_file}", flush=True)
-        polylines, edge_count = load_driving_polylines_from_pbf(args.pbf_file, FULL_BBOX)
-        full_grid, _ = rasterize_polylines(polylines, FULL_BBOX, FULL_GRID_WIDTH)
+        print(f"Loading {city['display_name']} driving network from {args.pbf_file}", flush=True)
+        polylines, edge_count = load_driving_polylines_from_pbf(args.pbf_file, full_bbox)
+        full_grid, _, full_heading_counts = rasterize_polylines(polylines, full_bbox, full_grid_width)
         metadata.update({
             "source": "pbf",
             "pbf_file": str(args.pbf_file),
@@ -437,12 +528,12 @@ def main() -> None:
     else:
         tile_dir = args.data_dir / "osm_tiles"
         tile_paths = []
-        for row, column, bbox in tile_bbox(FULL_BBOX):
+        for row, column, bbox in tile_bbox(full_bbox):
             print(f"Downloading OSM tile r{row} c{column}: {bbox_to_query(bbox)}", flush=True)
-            tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"manhattan_r{row}_c{column}"))
+            tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"{city_id}_r{row}_c{column}"))
 
         nodes, ways = load_osm(tile_paths)
-        full_grid, _ = rasterize_bbox(nodes, ways, FULL_BBOX, FULL_GRID_WIDTH)
+        full_grid, _, full_heading_counts = rasterize_bbox(nodes, ways, full_bbox, full_grid_width)
         metadata.update({
             "source": "live_tiles",
             "tile_count": len(tile_paths),
@@ -450,30 +541,62 @@ def main() -> None:
             "way_count": len(ways),
         })
 
-    full_start = point_to_grid(FULL_ROUTE_POINTS["start"], FULL_BBOX, full_grid)
-    full_goal = point_to_grid(FULL_ROUTE_POINTS["goal"], FULL_BBOX, full_grid)
-    write_scenario(args.artifacts_dir / "manhattan_osm_grid.txt", "manhattan_osm", full_grid, full_start, full_goal)
+    full_start = point_to_grid(route["start"], full_bbox, full_grid)
+    full_goal = point_to_grid(route["goal"], full_bbox, full_grid)
+    write_scenario(
+        args.artifacts_dir / f"{route['scenario_name']}_grid.txt",
+        route["scenario_name"],
+        full_grid,
+        full_start,
+        full_goal,
+    )
+    write_network(
+        args.artifacts_dir / f"{route['scenario_name']}_network.json",
+        route["scenario_name"],
+        len(full_grid[0]),
+        len(full_grid),
+        full_heading_counts,
+    )
 
-    midtown_grid, crop_info = crop_grid(full_grid, FULL_BBOX, MIDTOWN_BBOX)
-    midtown_start = point_to_grid({"lat": 40.7395, "lon": -74.0085}, MIDTOWN_BBOX, midtown_grid)
-    midtown_goal = point_to_grid({"lat": 40.7700, "lon": -73.9745}, MIDTOWN_BBOX, midtown_grid)
-    write_scenario(args.artifacts_dir / "manhattan_midtown_osm_grid.txt", "manhattan_midtown_osm", midtown_grid, midtown_start, midtown_goal)
+    district_grid, crop_info = crop_grid(full_grid, full_bbox, district_bbox)
+    district_heading_counts = crop_heading_counts(full_heading_counts, crop_info)
+    district_start = point_to_grid(district["agents"][0]["start"], district_bbox, district_grid)
+    district_goal = point_to_grid(district["agents"][0]["goal"], district_bbox, district_grid)
+    write_scenario(
+        args.artifacts_dir / f"{district['scenario_name']}_grid.txt",
+        district["scenario_name"],
+        district_grid,
+        district_start,
+        district_goal,
+    )
+    write_network(
+        args.artifacts_dir / f"{district['scenario_name']}_network.json",
+        district["scenario_name"],
+        len(district_grid[0]),
+        len(district_grid),
+        district_heading_counts,
+    )
 
     agents = []
-    for entry in MIDTOWN_AGENT_POINTS:
-        start = point_to_grid(entry["start"], MIDTOWN_BBOX, midtown_grid)
-        goal = point_to_grid(entry["goal"], MIDTOWN_BBOX, midtown_grid)
+    for entry in district["agents"]:
+        start = point_to_grid(entry["start"], district_bbox, district_grid)
+        goal = point_to_grid(entry["goal"], district_bbox, district_grid)
+        start_heading = dominant_heading(district_heading_counts, start, fallback=0)
+        goal_heading = dominant_heading(district_heading_counts, goal, fallback=start_heading)
         agents.append(
             {
                 "id": entry["id"],
-                "start": {"x": start[0], "y": start[1], "heading": MIDTOWN_AGENT_HEADING},
-                "goal": {"x": goal[0], "y": goal[1], "heading": MIDTOWN_AGENT_HEADING},
+                "start": {"x": start[0], "y": start[1], "heading": start_heading},
+                "goal": {"x": goal[0], "y": goal[1], "heading": goal_heading},
             }
         )
 
-    write_agents(args.artifacts_dir / "manhattan_midtown_agents.json", agents)
+    write_agents(args.artifacts_dir / f"{district['scenario_name']}_agents.json", agents)
     metadata["crop"] = crop_info
-    (args.artifacts_dir / "manhattan_osm_metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+    (args.artifacts_dir / f"{route['scenario_name']}_metadata.json").write_text(
+        json.dumps(metadata, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,100 @@
+{
+  "city_id": "manhattan",
+  "display_name": "Manhattan",
+  "full_bbox": {
+    "west": -74.03,
+    "south": 40.699,
+    "east": -73.9,
+    "north": 40.882
+  },
+  "full_grid_width": 180,
+  "route": {
+    "scenario_name": "manhattan_osm",
+    "start": {
+      "lat": 40.7046,
+      "lon": -74.015
+    },
+    "goal": {
+      "lat": 40.8738,
+      "lon": -73.9264
+    }
+  },
+  "district": {
+    "name": "midtown",
+    "scenario_name": "manhattan_midtown_osm",
+    "bbox": {
+      "west": -74.012,
+      "south": 40.738,
+      "east": -73.968,
+      "north": 40.773
+    },
+    "agents": [
+      {
+        "id": "agent_1",
+        "start": {
+          "lat": 40.7395,
+          "lon": -74.0085
+        },
+        "goal": {
+          "lat": 40.77,
+          "lon": -73.9745
+        }
+      },
+      {
+        "id": "agent_2",
+        "start": {
+          "lat": 40.7395,
+          "lon": -73.9735
+        },
+        "goal": {
+          "lat": 40.77,
+          "lon": -74.0045
+        }
+      },
+      {
+        "id": "agent_3",
+        "start": {
+          "lat": 40.7465,
+          "lon": -74.009
+        },
+        "goal": {
+          "lat": 40.767,
+          "lon": -73.981
+        }
+      },
+      {
+        "id": "agent_4",
+        "start": {
+          "lat": 40.744,
+          "lon": -73.975
+        },
+        "goal": {
+          "lat": 40.7645,
+          "lon": -74.001
+        }
+      },
+      {
+        "id": "agent_5",
+        "start": {
+          "lat": 40.741,
+          "lon": -74.004
+        },
+        "goal": {
+          "lat": 40.7595,
+          "lon": -73.9725
+        }
+      },
+      {
+        "id": "agent_6",
+        "start": {
+          "lat": 40.742,
+          "lon": -73.9785
+        },
+        "goal": {
+          "lat": 40.7615,
+          "lon": -73.9995
+        }
+      }
+    ]
+  }
+}

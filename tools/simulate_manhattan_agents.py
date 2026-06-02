@@ -34,9 +34,11 @@ ASTAR_PRIMITIVES = (
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Simulate cooperative LattPath vs independent A* on Manhattan OSM streets.")
+    parser = argparse.ArgumentParser(description="Simulate cooperative LattPath vs independent A* on a city street raster.")
     parser.add_argument("--scenario-file", type=Path, required=True, help="Scenario grid file produced from Manhattan OSM.")
     parser.add_argument("--agents-file", type=Path, required=True, help="Agent spawn/goal file.")
+    parser.add_argument("--network-file", type=Path, help="Optional per-cell heading metadata produced by the OSM builder.")
+    parser.add_argument("--output-prefix", help="Optional prefix for generated simulation JSON filenames.")
     parser.add_argument("--output-dir", type=Path, default=Path("artifacts"), help="Directory for simulation outputs.")
     return parser.parse_args()
 
@@ -80,6 +82,23 @@ def parse_scenario(path: Path) -> dict:
     return scenario
 
 
+def parse_network(path: Path) -> dict:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    allowed = {
+        (entry["x"], entry["y"]): set(entry["allowed_headings"])
+        for entry in payload.get("cells", [])
+    }
+    dominant = {
+        (entry["x"], entry["y"]): entry["dominant_heading"]
+        for entry in payload.get("cells", [])
+    }
+    return {
+        "scenario": payload.get("scenario"),
+        "allowed": allowed,
+        "dominant": dominant,
+    }
+
+
 def serialize_scenario(scenario: dict) -> dict:
     obstacles = [
         {"x": x, "y": y}
@@ -101,7 +120,22 @@ def completed_agent_count(planned_agents: list, horizon: int) -> int:
     return sum(1 for agent in planned_agents if agent["done_tick"] is not None and agent["done_tick"] <= horizon)
 
 
-def apply_primitive(free_cells: set, width: int, height: int, pose: tuple, primitive: dict):
+def heading_allowed(network: dict | None, x: int, y: int, heading: int) -> bool:
+    if not network:
+        return True
+    allowed = network["allowed"].get((x, y))
+    if not allowed:
+        return True
+    return normalize_heading(heading) in allowed
+
+
+def dominant_cell_heading(network: dict | None, x: int, y: int, fallback: int) -> int:
+    if not network:
+        return fallback
+    return network["dominant"].get((x, y), fallback)
+
+
+def apply_primitive(scenario: dict, pose: tuple, primitive: dict):
     x, y, heading = pose
     traversed = []
     end_heading = heading
@@ -111,9 +145,11 @@ def apply_primitive(free_cells: set, width: int, height: int, pose: tuple, primi
         dx, dy = HEADING_VECTORS[normalize_heading(step_heading)]
         next_x = x + dx
         next_y = y + dy
-        if next_x < 0 or next_x >= width or next_y < 0 or next_y >= height:
+        if next_x < 0 or next_x >= scenario["width"] or next_y < 0 or next_y >= scenario["height"]:
             return False
-        if (next_x, next_y) not in free_cells:
+        if (next_x, next_y) not in scenario["free"]:
+            return False
+        if not heading_allowed(scenario.get("network"), next_x, next_y, step_heading):
             return False
         x, y = next_x, next_y
         traversed.append((x, y))
@@ -182,8 +218,6 @@ def reconstruct_spatial_path(goal_state: tuple, parents: dict, start_state: tupl
 
 def plan_spatial(scenario: dict, start: dict, goal: dict, primitives: tuple) -> dict:
     start_state = (start["x"], start["y"], start["heading"])
-    width = scenario["width"]
-    height = scenario["height"]
 
     frontier = []
     heapq.heappush(frontier, (0.0, 0.0, start_state))
@@ -207,7 +241,7 @@ def plan_spatial(scenario: dict, start: dict, goal: dict, primitives: tuple) -> 
             }
 
         for primitive in primitives:
-            step = apply_primitive(scenario["free"], width, height, state, primitive)
+            step = apply_primitive(scenario, state, primitive)
             if step is None:
                 continue
             neighbor = step["end"]
@@ -308,8 +342,6 @@ def plan_temporal(
 ) -> dict:
     preferred_cells = preferred_cells or {}
     start_state = (start["x"], start["y"], start["heading"], 0)
-    width = scenario["width"]
-    height = scenario["height"]
 
     frontier = []
     heapq.heappush(frontier, (0.0, 0.0, start_state))
@@ -343,7 +375,7 @@ def plan_temporal(
                 heapq.heappush(frontier, (wait_cost + heuristic, wait_cost, wait_state))
 
         for primitive in primitives:
-            step = apply_primitive(scenario["free"], width, height, (x, y, heading), primitive)
+            step = apply_primitive(scenario, (x, y, heading), primitive)
             if step is None:
                 continue
 
@@ -398,6 +430,92 @@ def count_wait_steps(timeline: list) -> int:
     )
 
 
+def path_overlap_score(left: dict, right: dict) -> int:
+    left_cells = {(cell["x"], cell["y"]) for cell in left["path"]["cells"]}
+    right_cells = {(cell["x"], cell["y"]) for cell in right["path"]["cells"]}
+    exact = len(left_cells & right_cells)
+    adjacent = 0
+    for x, y in left_cells:
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                if (x + dx, y + dy) in right_cells:
+                    adjacent += 1
+    return exact * 4 + adjacent
+
+
+def choose_pair_side(leader: dict, follower: dict) -> str:
+    leader_start = leader["timeline"][0]
+    follower_start = follower["start"]
+    if len(leader["timeline"]) > 1:
+        next_state = leader["timeline"][1]
+        dx = next_state["x"] - leader_start["x"]
+        dy = next_state["y"] - leader_start["y"]
+    else:
+        heading = leader_start["heading"]
+        dx, dy = HEADING_VECTORS[heading]
+
+    relative_x = follower_start["x"] - leader_start["x"]
+    relative_y = follower_start["y"] - leader_start["y"]
+    cross = dx * relative_y - dy * relative_x
+    return "left" if cross > 0 else "right"
+
+
+def build_communication_pairs(scenario: dict, agents: list) -> tuple:
+    nominal_plans = {}
+    for agent in agents:
+        plan = plan_spatial(scenario, agent["start"], agent["goal"], LATTPATH_PRIMITIVES)
+        if not plan["success"]:
+            raise RuntimeError(f"Nominal LattPath failed for {agent['id']}")
+        nominal_plans[agent["id"]] = plan
+
+    candidates = []
+    for index, left in enumerate(agents):
+        for right in agents[index + 1 :]:
+            score = path_overlap_score(nominal_plans[left["id"]], nominal_plans[right["id"]])
+            if score > 0:
+                candidates.append((score, left["id"], right["id"]))
+    candidates.sort(reverse=True)
+
+    by_id = {agent["id"]: agent for agent in agents}
+    used = set()
+    ordered_groups = []
+    formation_pairs = []
+
+    for score, left_id, right_id in candidates:
+        if left_id in used or right_id in used:
+            continue
+        left_plan = nominal_plans[left_id]
+        right_plan = nominal_plans[right_id]
+        leader_id, follower_id = (
+            (left_id, right_id)
+            if len(left_plan["path"]["cells"]) >= len(right_plan["path"]["cells"])
+            else (right_id, left_id)
+        )
+        leader = by_id[leader_id]
+        follower = by_id[follower_id]
+        side = choose_pair_side(
+            {"timeline": nominal_plans[leader_id]["path"]["timeline"]},
+            follower,
+        )
+        ordered_groups.append((leader, follower, side))
+        formation_pairs.append({
+            "leader": leader_id,
+            "follower": follower_id,
+            "side": side,
+            "overlap_score": score,
+        })
+        used.add(left_id)
+        used.add(right_id)
+
+    for agent in agents:
+        if agent["id"] not in used:
+            ordered_groups.append((agent, None, None))
+
+    return ordered_groups, formation_pairs
+
+
 def simulate_independent_astar(scenario: dict, agents: list) -> dict:
     planned_agents = []
     for agent in agents:
@@ -417,7 +535,7 @@ def simulate_independent_astar(scenario: dict, agents: list) -> dict:
     conflict_count = 0
     wait_events = 0
     history = []
-    max_ticks = 260
+    max_ticks = max(len(agent["timeline"]) for agent in planned_agents) * 4
 
     while ticks < max_ticks:
         state_snapshot = []
@@ -489,41 +607,69 @@ def simulate_independent_astar(scenario: dict, agents: list) -> dict:
 
 
 def simulate_cooperative_lattpath(scenario: dict, agents: list) -> dict:
-    sorted_agents = sorted(agents, key=lambda item: (item["start"]["x"], item["start"]["y"]))
     cell_reservations = defaultdict(set)
     edge_reservations = defaultdict(set)
     planned_agents = []
-    planning_horizon = 220
-    formation_pairs = []
+    ordered_groups, formation_pairs = build_communication_pairs(scenario, agents)
+    nominal_lengths = []
+    for group in ordered_groups:
+        leader = group[0]
+        nominal = plan_spatial(scenario, leader["start"], leader["goal"], LATTPATH_PRIMITIVES)
+        if nominal["success"]:
+            nominal_lengths.append(len(nominal["path"]["timeline"]))
+        follower = group[1]
+        if follower is not None:
+            nominal = plan_spatial(scenario, follower["start"], follower["goal"], LATTPATH_PRIMITIVES)
+            if nominal["success"]:
+                nominal_lengths.append(len(nominal["path"]["timeline"]))
+    planning_horizon = max(nominal_lengths or [60]) * 3
 
-    for index, agent in enumerate(sorted_agents):
-        preferred = {}
-        if index % 2 == 1:
-            leader = planned_agents[-1]
-            side = "right" if index % 4 == 1 else "left"
-            preferred = build_preferred_lane(leader["timeline"], scenario, side)
-            formation_pairs.append({"leader": leader["id"], "follower": agent["id"], "side": side})
-
-        plan = plan_temporal(
+    for leader, follower, side in ordered_groups:
+        leader_plan = plan_temporal(
             scenario,
-            agent["start"],
-            agent["goal"],
+            leader["start"],
+            leader["goal"],
+            LATTPATH_PRIMITIVES,
+            cell_reservations,
+            edge_reservations,
+            max_time=planning_horizon,
+        )
+        if not leader_plan["success"]:
+            raise RuntimeError(f"Cooperative LattPath failed for {leader['id']}")
+
+        reserve_timeline(leader_plan["path"], cell_reservations, edge_reservations, hold_until=planning_horizon)
+        planned_agents.append({
+            "id": leader["id"],
+            "start": leader["start"],
+            "goal": leader["goal"],
+            "timeline": leader_plan["path"]["timeline"],
+            "done_tick": leader_plan["path"]["timeline"][-1]["t"],
+        })
+
+        if follower is None:
+            continue
+
+        preferred = build_preferred_lane(leader_plan["path"]["timeline"], scenario, side)
+        follower_plan = plan_temporal(
+            scenario,
+            follower["start"],
+            follower["goal"],
             LATTPATH_PRIMITIVES,
             cell_reservations,
             edge_reservations,
             preferred_cells=preferred,
             max_time=planning_horizon,
         )
-        if not plan["success"]:
-            raise RuntimeError(f"Cooperative LattPath failed for {agent['id']}")
+        if not follower_plan["success"]:
+            raise RuntimeError(f"Cooperative LattPath failed for {follower['id']}")
 
-        reserve_timeline(plan["path"], cell_reservations, edge_reservations, hold_until=planning_horizon)
+        reserve_timeline(follower_plan["path"], cell_reservations, edge_reservations, hold_until=planning_horizon)
         planned_agents.append({
-            "id": agent["id"],
-            "start": agent["start"],
-            "goal": agent["goal"],
-            "timeline": plan["path"]["timeline"],
-            "done_tick": plan["path"]["timeline"][-1]["t"],
+            "id": follower["id"],
+            "start": follower["start"],
+            "goal": follower["goal"],
+            "timeline": follower_plan["path"]["timeline"],
+            "done_tick": follower_plan["path"]["timeline"][-1]["t"],
         })
 
     max_tick = max(agent["done_tick"] for agent in planned_agents)
@@ -551,14 +697,17 @@ def simulate_cooperative_lattpath(scenario: dict, agents: list) -> dict:
 def main() -> None:
     args = parse_args()
     scenario = parse_scenario(args.scenario_file)
+    if args.network_file is not None:
+        scenario["network"] = parse_network(args.network_file)
     agents = json.loads(args.agents_file.read_text(encoding="utf-8"))["agents"]
+    output_prefix = args.output_prefix or scenario["name"]
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     independent = simulate_independent_astar(scenario, agents)
     independent["scenario"] = scenario["name"]
     independent["grid"] = serialize_scenario(scenario)
-    (args.output_dir / "manhattan_independent_astar_simulation.json").write_text(
+    (args.output_dir / f"{output_prefix}_independent_astar_simulation.json").write_text(
         json.dumps(independent, indent=2) + "\n",
         encoding="utf-8",
     )
@@ -566,7 +715,7 @@ def main() -> None:
     cooperative = simulate_cooperative_lattpath(scenario, agents)
     cooperative["scenario"] = scenario["name"]
     cooperative["grid"] = serialize_scenario(scenario)
-    (args.output_dir / "manhattan_cooperative_lattpath_simulation.json").write_text(
+    (args.output_dir / f"{output_prefix}_cooperative_lattpath_simulation.json").write_text(
         json.dumps(cooperative, indent=2) + "\n",
         encoding="utf-8",
     )
