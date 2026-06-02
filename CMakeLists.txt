@@ -25,10 +25,15 @@ enable_testing()
 
 add_test(
     NAME lattpath_downtown
-    COMMAND lattpath --scenario downtown --output ${CMAKE_BINARY_DIR}/downtown_test_plan.json
+    COMMAND lattpath --scenario downtown --algorithm lattpath --output ${CMAKE_BINARY_DIR}/downtown_test_plan.json
 )
 
 add_test(
     NAME lattpath_warehouse
-    COMMAND lattpath --scenario warehouse --output ${CMAKE_BINARY_DIR}/warehouse_test_plan.json
+    COMMAND lattpath --scenario warehouse --algorithm astar --output ${CMAKE_BINARY_DIR}/warehouse_test_plan.json
+)
+
+add_test(
+    NAME lattpath_dense_benchmark
+    COMMAND lattpath --benchmark-dense-suite --benchmark-iterations 3 --benchmark-output ${CMAKE_BINARY_DIR}/dense_suite_test.json
 )

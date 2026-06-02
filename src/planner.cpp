@@ -9,7 +9,6 @@
 #include <iomanip>
 #include <limits>
 #include <queue>
-#include <sstream>
 #include <unordered_set>
 #include <utility>
 
@@ -56,6 +55,7 @@ struct PrimitiveDefinition {
     enum class Kind {
         Forward,
         LongForward,
+        CruiseForward,
         LeftArc,
         RightArc,
     };
@@ -65,11 +65,18 @@ struct PrimitiveDefinition {
     double cost = 0.0;
 };
 
-const std::array<PrimitiveDefinition, 4> kPrimitives = {{
+const std::array<PrimitiveDefinition, 5> kLattPathPrimitives = {{
     {PrimitiveDefinition::Kind::Forward, "forward", 1.0},
-    {PrimitiveDefinition::Kind::LongForward, "long_forward", 1.8},
-    {PrimitiveDefinition::Kind::LeftArc, "left_arc", 2.3},
-    {PrimitiveDefinition::Kind::RightArc, "right_arc", 2.3},
+    {PrimitiveDefinition::Kind::LongForward, "long_forward", 1.75},
+    {PrimitiveDefinition::Kind::CruiseForward, "cruise_forward", 3.25},
+    {PrimitiveDefinition::Kind::LeftArc, "left_arc", 2.2},
+    {PrimitiveDefinition::Kind::RightArc, "right_arc", 2.2},
+}};
+
+const std::array<PrimitiveDefinition, 3> kBaselinePrimitives = {{
+    {PrimitiveDefinition::Kind::Forward, "forward", 1.0},
+    {PrimitiveDefinition::Kind::LeftArc, "left_arc", 2.2},
+    {PrimitiveDefinition::Kind::RightArc, "right_arc", 2.2},
 }};
 
 int normalize_heading(int heading) {
@@ -196,21 +203,53 @@ Scenario make_switchbacks_scenario() {
     return scenario;
 }
 
+Scenario make_dense_city_scenario() {
+    Scenario scenario;
+    scenario.name = "dense_city";
+    scenario.width = 72;
+    scenario.height = 48;
+    scenario.start = {2, 2, 0};
+    scenario.goal = {68, 44, 0};
+
+    for (int block_x = 6; block_x <= 56; block_x += 10) {
+        for (int block_y = 4; block_y <= 36; block_y += 8) {
+            append_rectangle(scenario.obstacles, block_x, block_y, block_x + 5, block_y + 4);
+        }
+    }
+
+    append_rectangle(scenario.obstacles, 46, 4, 61, 9);
+    append_rectangle(scenario.obstacles, 46, 20, 61, 25);
+    append_rectangle(scenario.obstacles, 46, 36, 61, 41);
+    append_rectangle(scenario.obstacles, 18, 14, 23, 25);
+    append_rectangle(scenario.obstacles, 28, 22, 33, 33);
+
+    return scenario;
+}
+
 std::vector<Scenario> builtin_scenarios() {
     std::vector<Scenario> scenarios;
     scenarios.push_back(make_downtown_scenario());
     scenarios.push_back(make_warehouse_scenario());
     scenarios.push_back(make_switchbacks_scenario());
+    scenarios.push_back(make_dense_city_scenario());
     return scenarios;
 }
 
-double heuristic(const Pose& current, const Pose& goal) {
+std::vector<SearchAlgorithm> benchmark_algorithms() {
+    return {
+        SearchAlgorithm::LattPath,
+        SearchAlgorithm::AStar,
+        SearchAlgorithm::Dijkstra,
+    };
+}
+
+double pose_heuristic(const Pose& current, const Pose& goal) {
     const double dx = static_cast<double>(goal.x - current.x);
     const double dy = static_cast<double>(goal.y - current.y);
     return std::hypot(dx, dy) + (0.35 * static_cast<double>(heading_distance(current.heading, goal.heading)));
 }
 
-bool is_goal(const Pose& current, const Pose& goal) {
+bool pose_goal_reached(const Pose& current, const Pose& goal) {
     return current.x == goal.x && current.y == goal.y && heading_distance(current.heading, goal.heading) <= 1;
 }
 
@@ -224,19 +263,19 @@ std::optional<PrimitiveStep> apply_primitive(
     step.cost = primitive.cost;
     step.end_pose = pose;
 
-    auto advance = [&](int heading_index) -> std::optional<GridPoint> {
+    auto advance = [&](int heading_index) -> bool {
         const GridPoint direction = kHeadingVectors[normalize_heading(heading_index)];
-        GridPoint next_point{
+        const GridPoint next_point{
             step.end_pose.x + direction.x,
             step.end_pose.y + direction.y,
         };
         if (is_blocked(scenario, occupied, next_point.x, next_point.y)) {
-            return std::nullopt;
+            return false;
         }
         step.end_pose.x = next_point.x;
         step.end_pose.y = next_point.y;
         step.traversed_cells.push_back(next_point);
-        return next_point;
+        return true;
     };
 
     switch (primitive.kind) {
@@ -247,8 +286,18 @@ std::optional<PrimitiveStep> apply_primitive(
             break;
         }
         case PrimitiveDefinition::Kind::LongForward: {
-            if (!advance(pose.heading) || !advance(pose.heading)) {
-                return std::nullopt;
+            for (int step_index = 0; step_index < 2; ++step_index) {
+                if (!advance(pose.heading)) {
+                    return std::nullopt;
+                }
+            }
+            break;
+        }
+        case PrimitiveDefinition::Kind::CruiseForward: {
+            for (int step_index = 0; step_index < 4; ++step_index) {
+                if (!advance(pose.heading)) {
+                    return std::nullopt;
+                }
             }
             break;
         }
@@ -275,7 +324,8 @@ std::optional<PrimitiveStep> apply_primitive(
     }
 
     if (primitive.kind == PrimitiveDefinition::Kind::Forward ||
-        primitive.kind == PrimitiveDefinition::Kind::LongForward) {
+        primitive.kind == PrimitiveDefinition::Kind::LongForward ||
+        primitive.kind == PrimitiveDefinition::Kind::CruiseForward) {
         step.end_pose.heading = pose.heading;
     }
 
@@ -286,13 +336,12 @@ std::optional<PrimitiveStep> apply_primitive(
     return step;
 }
 
-PathResult reconstruct_path(
+PathResult reconstruct_pose_path(
     int goal_index,
     int width,
     int height,
     const std::vector<int>& parents,
-    const std::vector<std::string>& parent_primitives,
-    const std::vector<std::vector<GridPoint>>& parent_segments,
+    const std::vector<int>& parent_primitive_ids,
     const std::vector<double>& g_scores) {
     std::vector<int> state_chain;
     for (int current = goal_index; current != -1; current = parents[static_cast<std::size_t>(current)]) {
@@ -311,75 +360,74 @@ PathResult reconstruct_path(
         path.cells.push_back({path.states.front().x, path.states.front().y});
     }
 
-    for (std::size_t i = 1; i < state_chain.size(); ++i) {
-        const int state_index = state_chain[i];
-        path.primitive_names.push_back(parent_primitives[static_cast<std::size_t>(state_index)]);
-        for (const GridPoint& cell : parent_segments[static_cast<std::size_t>(state_index)]) {
-            path.cells.push_back(cell);
+    for (std::size_t index = 1; index < state_chain.size(); ++index) {
+        const int state_index = state_chain[index];
+        const int primitive_id = parent_primitive_ids[static_cast<std::size_t>(state_index)];
+        if (primitive_id < 0 || primitive_id >= static_cast<int>(kLattPathPrimitives.size())) {
+            continue;
+        }
+
+        const PrimitiveDefinition& primitive = kLattPathPrimitives[static_cast<std::size_t>(primitive_id)];
+        path.primitive_names.push_back(primitive.name);
+
+        Pose cursor = path.states[index - 1];
+
+        auto append_forward_cells = [&](int heading, int count) {
+            const GridPoint direction = kHeadingVectors[normalize_heading(heading)];
+            for (int step_index = 0; step_index < count; ++step_index) {
+                cursor.x += direction.x;
+                cursor.y += direction.y;
+                path.cells.push_back({cursor.x, cursor.y});
+            }
+        };
+
+        switch (primitive.kind) {
+            case PrimitiveDefinition::Kind::Forward:
+                append_forward_cells(cursor.heading, 1);
+                break;
+            case PrimitiveDefinition::Kind::LongForward:
+                append_forward_cells(cursor.heading, 2);
+                break;
+            case PrimitiveDefinition::Kind::CruiseForward:
+                append_forward_cells(cursor.heading, 4);
+                break;
+            case PrimitiveDefinition::Kind::LeftArc:
+                append_forward_cells(cursor.heading, 1);
+                cursor.heading = normalize_heading(cursor.heading + 1);
+                append_forward_cells(cursor.heading, 1);
+                break;
+            case PrimitiveDefinition::Kind::RightArc:
+                append_forward_cells(cursor.heading, 1);
+                cursor.heading = normalize_heading(cursor.heading - 1);
+                append_forward_cells(cursor.heading, 1);
+                break;
         }
     }
 
     return path;
 }
 
-void write_point_array(std::ostream& output, const std::vector<GridPoint>& points, int indent) {
-    for (std::size_t i = 0; i < points.size(); ++i) {
-        output << std::string(indent, ' ') << "{\"x\": " << points[i].x << ", \"y\": " << points[i].y << "}";
-        if (i + 1 != points.size()) {
-            output << ",";
-        }
-        output << "\n";
-    }
-}
-
-void write_pose_array(std::ostream& output, const std::vector<Pose>& poses, int indent) {
-    for (std::size_t i = 0; i < poses.size(); ++i) {
-        output << std::string(indent, ' ') << "{\"x\": " << poses[i].x << ", \"y\": " << poses[i].y
-               << ", \"heading\": " << poses[i].heading << "}";
-        if (i + 1 != poses.size()) {
-            output << ",";
-        }
-        output << "\n";
-    }
-}
-
-}  // namespace
-
-std::vector<std::string> scenario_names() {
-    const std::vector<Scenario> scenarios = builtin_scenarios();
-    std::vector<std::string> names;
-    names.reserve(scenarios.size());
-    for (const Scenario& scenario : scenarios) {
-        names.push_back(scenario.name);
-    }
-    return names;
-}
-
-std::optional<Scenario> load_scenario(const std::string& name) {
-    for (const Scenario& scenario : builtin_scenarios()) {
-        if (scenario.name == name) {
-            return scenario;
-        }
-    }
-    return std::nullopt;
-}
-
-PlanResult plan(const Scenario& scenario) {
+template <std::size_t PrimitiveCount>
+PlanResult plan_pose_search(
+    const Scenario& scenario,
+    SearchAlgorithm algorithm,
+    const std::array<PrimitiveDefinition, PrimitiveCount>& primitives,
+    bool use_heuristic) {
     const auto started_at = Clock::now();
     const std::unordered_set<int> occupied = obstacle_lookup(scenario);
     const int state_count = scenario.width * scenario.height * static_cast<int>(kHeadingVectors.size());
 
     std::vector<double> g_scores(static_cast<std::size_t>(state_count), std::numeric_limits<double>::infinity());
     std::vector<int> parents(static_cast<std::size_t>(state_count), -1);
-    std::vector<std::string> parent_primitives(static_cast<std::size_t>(state_count));
-    std::vector<std::vector<GridPoint>> parent_segments(static_cast<std::size_t>(state_count));
+    std::vector<int> parent_primitive_ids(static_cast<std::size_t>(state_count), -1);
     std::priority_queue<FrontierNode, std::vector<FrontierNode>, FrontierCompare> open_set;
 
     const int start_index = pose_index(scenario.start, scenario.width, scenario.height);
     g_scores[static_cast<std::size_t>(start_index)] = 0.0;
-    open_set.push({heuristic(scenario.start, scenario.goal), 0.0, start_index, scenario.start});
+    open_set.push({use_heuristic ? pose_heuristic(scenario.start, scenario.goal) : 0.0, 0.0, start_index, scenario.start});
 
     PlanResult result;
+    result.algorithm = algorithm_name(algorithm);
     result.scenario = scenario;
 
     while (!open_set.empty()) {
@@ -397,21 +445,21 @@ PlanResult plan(const Scenario& scenario) {
             static_cast<int>(result.expanded.size()),
         });
 
-        if (is_goal(current.pose, scenario.goal)) {
-            result.path = reconstruct_path(
+        if (pose_goal_reached(current.pose, scenario.goal)) {
+            result.path = reconstruct_pose_path(
                 current.state_index,
                 scenario.width,
                 scenario.height,
                 parents,
-                parent_primitives,
-                parent_segments,
+                parent_primitive_ids,
                 g_scores);
             result.stats.success = true;
             result.stats.path_cost = result.path.cost;
             break;
         }
 
-        for (const PrimitiveDefinition& primitive : kPrimitives) {
+        for (std::size_t primitive_index = 0; primitive_index < primitives.size(); ++primitive_index) {
+            const PrimitiveDefinition& primitive = primitives[primitive_index];
             const std::optional<PrimitiveStep> step = apply_primitive(scenario, occupied, current.pose, primitive);
             if (!step.has_value()) {
                 continue;
@@ -426,11 +474,11 @@ PlanResult plan(const Scenario& scenario) {
 
             g_scores[static_cast<std::size_t>(neighbor_index)] = next_cost;
             parents[static_cast<std::size_t>(neighbor_index)] = current.state_index;
-            parent_primitives[static_cast<std::size_t>(neighbor_index)] = step->name;
-            parent_segments[static_cast<std::size_t>(neighbor_index)] = step->traversed_cells;
+            parent_primitive_ids[static_cast<std::size_t>(neighbor_index)] = static_cast<int>(primitive_index);
 
+            const double heuristic_cost = use_heuristic ? pose_heuristic(step->end_pose, scenario.goal) : 0.0;
             open_set.push({
-                next_cost + heuristic(step->end_pose, scenario.goal),
+                next_cost + heuristic_cost,
                 next_cost,
                 neighbor_index,
                 step->end_pose,
@@ -443,6 +491,214 @@ PlanResult plan(const Scenario& scenario) {
     result.stats.runtime_ms = std::chrono::duration<double, std::milli>(finished_at - started_at).count();
 
     return result;
+}
+
+void write_point_array(std::ostream& output, const std::vector<GridPoint>& points, int indent) {
+    for (std::size_t index = 0; index < points.size(); ++index) {
+        output << std::string(indent, ' ') << "{\"x\": " << points[index].x << ", \"y\": " << points[index].y << "}";
+        if (index + 1 != points.size()) {
+            output << ",";
+        }
+        output << "\n";
+    }
+}
+
+void write_pose_array(std::ostream& output, const std::vector<Pose>& poses, int indent) {
+    for (std::size_t index = 0; index < poses.size(); ++index) {
+        output << std::string(indent, ' ') << "{\"x\": " << poses[index].x << ", \"y\": " << poses[index].y
+               << ", \"heading\": " << poses[index].heading << "}";
+        if (index + 1 != poses.size()) {
+            output << ",";
+        }
+        output << "\n";
+    }
+}
+
+void write_plan_fields(std::ostream& output, const PlanResult& plan_result, int indent) {
+    const std::string base(indent, ' ');
+    output << base << "\"algorithm\": \"" << plan_result.algorithm << "\",\n";
+    output << base << "\"grid\": {\"width\": " << plan_result.scenario.width << ", \"height\": " << plan_result.scenario.height
+           << "},\n";
+    output << base << "\"start\": {\"x\": " << plan_result.scenario.start.x << ", \"y\": " << plan_result.scenario.start.y
+           << ", \"heading\": " << plan_result.scenario.start.heading << "},\n";
+    output << base << "\"goal\": {\"x\": " << plan_result.scenario.goal.x << ", \"y\": " << plan_result.scenario.goal.y
+           << ", \"heading\": " << plan_result.scenario.goal.heading << "},\n";
+    output << base << "\"obstacles\": [\n";
+    write_point_array(output, plan_result.scenario.obstacles, indent + 2);
+    output << base << "],\n";
+    output << base << "\"expanded\": [\n";
+    for (std::size_t index = 0; index < plan_result.expanded.size(); ++index) {
+        const ExpandedState& expanded = plan_result.expanded[index];
+        output << std::string(indent + 2, ' ') << "{\"x\": " << expanded.pose.x
+               << ", \"y\": " << expanded.pose.y
+               << ", \"heading\": " << expanded.pose.heading
+               << ", \"g\": " << expanded.g_cost
+               << ", \"f\": " << expanded.f_cost
+               << ", \"order\": " << expanded.order << "}";
+        if (index + 1 != plan_result.expanded.size()) {
+            output << ",";
+        }
+        output << "\n";
+    }
+    output << base << "],\n";
+    output << base << "\"path\": {\n";
+    output << std::string(indent + 2, ' ') << "\"cost\": " << plan_result.path.cost << ",\n";
+    output << std::string(indent + 2, ' ') << "\"states\": [\n";
+    write_pose_array(output, plan_result.path.states, indent + 4);
+    output << std::string(indent + 2, ' ') << "],\n";
+    output << std::string(indent + 2, ' ') << "\"cells\": [\n";
+    write_point_array(output, plan_result.path.cells, indent + 4);
+    output << std::string(indent + 2, ' ') << "],\n";
+    output << std::string(indent + 2, ' ') << "\"primitives\": [\n";
+    for (std::size_t index = 0; index < plan_result.path.primitive_names.size(); ++index) {
+        output << std::string(indent + 4, ' ') << "\"" << plan_result.path.primitive_names[index] << "\"";
+        if (index + 1 != plan_result.path.primitive_names.size()) {
+            output << ",";
+        }
+        output << "\n";
+    }
+    output << std::string(indent + 2, ' ') << "]\n";
+    output << base << "},\n";
+    output << base << "\"stats\": {\n";
+    output << std::string(indent + 2, ' ') << "\"success\": " << (plan_result.stats.success ? "true" : "false") << ",\n";
+    output << std::string(indent + 2, ' ') << "\"expanded_states\": " << plan_result.stats.expanded_states << ",\n";
+    output << std::string(indent + 2, ' ') << "\"path_cost\": " << plan_result.stats.path_cost << ",\n";
+    output << std::string(indent + 2, ' ') << "\"runtime_ms\": " << plan_result.stats.runtime_ms << "\n";
+    output << base << "}\n";
+}
+
+}  // namespace
+
+std::vector<std::string> scenario_names() {
+    const std::vector<Scenario> scenarios = builtin_scenarios();
+    std::vector<std::string> names;
+    names.reserve(scenarios.size());
+    for (const Scenario& scenario : scenarios) {
+        names.push_back(scenario.name);
+    }
+    return names;
+}
+
+std::vector<std::string> dense_suite_scenario_names() {
+    return {
+        "warehouse",
+        "switchbacks",
+        "dense_city",
+    };
+}
+
+std::optional<Scenario> load_scenario(const std::string& name) {
+    for (const Scenario& scenario : builtin_scenarios()) {
+        if (scenario.name == name) {
+            return scenario;
+        }
+    }
+    return std::nullopt;
+}
+
+std::vector<std::string> algorithm_names() {
+    return {
+        algorithm_name(SearchAlgorithm::LattPath),
+        algorithm_name(SearchAlgorithm::AStar),
+        algorithm_name(SearchAlgorithm::Dijkstra),
+    };
+}
+
+std::optional<SearchAlgorithm> parse_algorithm(const std::string& name) {
+    if (name == "lattpath") {
+        return SearchAlgorithm::LattPath;
+    }
+    if (name == "astar") {
+        return SearchAlgorithm::AStar;
+    }
+    if (name == "dijkstra") {
+        return SearchAlgorithm::Dijkstra;
+    }
+    return std::nullopt;
+}
+
+std::string algorithm_name(SearchAlgorithm algorithm) {
+    switch (algorithm) {
+        case SearchAlgorithm::LattPath:
+            return "lattpath";
+        case SearchAlgorithm::AStar:
+            return "astar";
+        case SearchAlgorithm::Dijkstra:
+            return "dijkstra";
+    }
+    return "unknown";
+}
+
+std::string algorithm_display_name(SearchAlgorithm algorithm) {
+    switch (algorithm) {
+        case SearchAlgorithm::LattPath:
+            return "LattPath";
+        case SearchAlgorithm::AStar:
+            return "A*";
+        case SearchAlgorithm::Dijkstra:
+            return "Dijkstra";
+    }
+    return "Unknown";
+}
+
+PlanResult plan(const Scenario& scenario, SearchAlgorithm algorithm) {
+    switch (algorithm) {
+        case SearchAlgorithm::LattPath:
+            return plan_pose_search(scenario, SearchAlgorithm::LattPath, kLattPathPrimitives, true);
+        case SearchAlgorithm::AStar:
+            return plan_pose_search(scenario, SearchAlgorithm::AStar, kBaselinePrimitives, true);
+        case SearchAlgorithm::Dijkstra:
+            return plan_pose_search(scenario, SearchAlgorithm::Dijkstra, kBaselinePrimitives, false);
+    }
+    return plan_pose_search(scenario, SearchAlgorithm::LattPath, kLattPathPrimitives, true);
+}
+
+BenchmarkResult benchmark_dense_suite(std::size_t iterations) {
+    BenchmarkResult benchmark_result;
+    benchmark_result.name = "dense_suite";
+    benchmark_result.iterations = iterations;
+
+    for (const std::string& scenario_name : dense_suite_scenario_names()) {
+        const std::optional<Scenario> scenario = load_scenario(scenario_name);
+        if (!scenario.has_value()) {
+            continue;
+        }
+
+        ScenarioBenchmark scenario_benchmark;
+        scenario_benchmark.scenario = *scenario;
+
+        for (const SearchAlgorithm algorithm : benchmark_algorithms()) {
+            PlanResult plan_result = plan(*scenario, algorithm);
+            double runtime_total = plan_result.stats.runtime_ms;
+            double runtime_min = plan_result.stats.runtime_ms;
+            double runtime_max = plan_result.stats.runtime_ms;
+
+            for (std::size_t iteration = 1; iteration < iterations; ++iteration) {
+                PlanResult next_result = plan(*scenario, algorithm);
+                runtime_total += next_result.stats.runtime_ms;
+                runtime_min = std::min(runtime_min, next_result.stats.runtime_ms);
+                runtime_max = std::max(runtime_max, next_result.stats.runtime_ms);
+                if (iteration + 1 == iterations) {
+                    plan_result = std::move(next_result);
+                }
+            }
+
+            scenario_benchmark.entries.push_back({
+                algorithm_name(algorithm),
+                std::move(plan_result),
+                {
+                    iterations,
+                    runtime_total / static_cast<double>(iterations),
+                    runtime_min,
+                    runtime_max,
+                },
+            });
+        }
+
+        benchmark_result.scenarios.push_back(std::move(scenario_benchmark));
+    }
+
+    return benchmark_result;
 }
 
 bool write_plan_json(const PlanResult& plan_result, const std::string& output_path) {
@@ -459,53 +715,57 @@ bool write_plan_json(const PlanResult& plan_result, const std::string& output_pa
     output << std::fixed << std::setprecision(3);
     output << "{\n";
     output << "  \"scenario\": \"" << plan_result.scenario.name << "\",\n";
-    output << "  \"grid\": {\"width\": " << plan_result.scenario.width << ", \"height\": " << plan_result.scenario.height << "},\n";
-    output << "  \"start\": {\"x\": " << plan_result.scenario.start.x << ", \"y\": " << plan_result.scenario.start.y
-           << ", \"heading\": " << plan_result.scenario.start.heading << "},\n";
-    output << "  \"goal\": {\"x\": " << plan_result.scenario.goal.x << ", \"y\": " << plan_result.scenario.goal.y
-           << ", \"heading\": " << plan_result.scenario.goal.heading << "},\n";
-    output << "  \"obstacles\": [\n";
-    write_point_array(output, plan_result.scenario.obstacles, 4);
-    output << "  ],\n";
-    output << "  \"expanded\": [\n";
-    for (std::size_t i = 0; i < plan_result.expanded.size(); ++i) {
-        const ExpandedState& expanded = plan_result.expanded[i];
-        output << "    {\"x\": " << expanded.pose.x
-               << ", \"y\": " << expanded.pose.y
-               << ", \"heading\": " << expanded.pose.heading
-               << ", \"g\": " << expanded.g_cost
-               << ", \"f\": " << expanded.f_cost
-               << ", \"order\": " << expanded.order << "}";
-        if (i + 1 != plan_result.expanded.size()) {
+    write_plan_fields(output, plan_result, 2);
+    output << "}\n";
+
+    return true;
+}
+
+bool write_benchmark_json(const BenchmarkResult& benchmark_result, const std::string& output_path) {
+    std::filesystem::path output_file(output_path);
+    if (output_file.has_parent_path()) {
+        std::filesystem::create_directories(output_file.parent_path());
+    }
+
+    std::ofstream output(output_file);
+    if (!output.is_open()) {
+        return false;
+    }
+
+    output << std::fixed << std::setprecision(3);
+    output << "{\n";
+    output << "  \"benchmark\": \"" << benchmark_result.name << "\",\n";
+    output << "  \"iterations\": " << benchmark_result.iterations << ",\n";
+    output << "  \"scenarios\": [\n";
+    for (std::size_t scenario_index = 0; scenario_index < benchmark_result.scenarios.size(); ++scenario_index) {
+        const ScenarioBenchmark& scenario_benchmark = benchmark_result.scenarios[scenario_index];
+        output << "    {\n";
+        output << "      \"scenario\": \"" << scenario_benchmark.scenario.name << "\",\n";
+        output << "      \"algorithms\": [\n";
+        for (std::size_t entry_index = 0; entry_index < scenario_benchmark.entries.size(); ++entry_index) {
+            const BenchmarkEntry& entry = scenario_benchmark.entries[entry_index];
+            output << "        {\n";
+            write_plan_fields(output, entry.plan, 10);
+            output << "          ,\"timing\": {\n";
+            output << "            \"iterations\": " << entry.timing.iterations << ",\n";
+            output << "            \"mean_runtime_ms\": " << entry.timing.mean_runtime_ms << ",\n";
+            output << "            \"min_runtime_ms\": " << entry.timing.min_runtime_ms << ",\n";
+            output << "            \"max_runtime_ms\": " << entry.timing.max_runtime_ms << "\n";
+            output << "          }\n";
+            output << "        }";
+            if (entry_index + 1 != scenario_benchmark.entries.size()) {
+                output << ",";
+            }
+            output << "\n";
+        }
+        output << "      ]\n";
+        output << "    }";
+        if (scenario_index + 1 != benchmark_result.scenarios.size()) {
             output << ",";
         }
         output << "\n";
     }
-    output << "  ],\n";
-    output << "  \"path\": {\n";
-    output << "    \"cost\": " << plan_result.path.cost << ",\n";
-    output << "    \"states\": [\n";
-    write_pose_array(output, plan_result.path.states, 6);
-    output << "    ],\n";
-    output << "    \"cells\": [\n";
-    write_point_array(output, plan_result.path.cells, 6);
-    output << "    ],\n";
-    output << "    \"primitives\": [\n";
-    for (std::size_t i = 0; i < plan_result.path.primitive_names.size(); ++i) {
-        output << "      \"" << plan_result.path.primitive_names[i] << "\"";
-        if (i + 1 != plan_result.path.primitive_names.size()) {
-            output << ",";
-        }
-        output << "\n";
-    }
-    output << "    ]\n";
-    output << "  },\n";
-    output << "  \"stats\": {\n";
-    output << "    \"success\": " << (plan_result.stats.success ? "true" : "false") << ",\n";
-    output << "    \"expanded_states\": " << plan_result.stats.expanded_states << ",\n";
-    output << "    \"path_cost\": " << plan_result.stats.path_cost << ",\n";
-    output << "    \"runtime_ms\": " << plan_result.stats.runtime_ms << "\n";
-    output << "  }\n";
+    output << "  ]\n";
     output << "}\n";
 
     return true;
