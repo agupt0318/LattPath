@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LattPath Visualizer</title>
+  <style>
+    :root {
+      --paper: #fcfbf7;
+      --canvas: #fffdf6;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --grid: #e7dcc4;
+      --path: #ea580c;
+      --vehicle: #b45309;
+      --start: #0f766e;
+      --goal: #b91c1c;
+      --panel: #f3ede0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #fffef9 0%, var(--paper) 70%);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 10px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 760px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid #dccfaf;
+      border-radius: 18px;
+      padding: 14px 16px;
+      box-shadow: 0 18px 40px rgba(95, 75, 34, 0.08);
+    }
+
+    .controls label {
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    .controls input[type="range"] {
+      width: 220px;
+    }
+
+    .controls button,
+    .controls input[type="file"]::file-selector-button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      background: var(--ink);
+      color: white;
+      padding: 10px 14px;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .controls input[type="file"] {
+      max-width: 280px;
+    }
+
+    .layout {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      align-items: start;
+    }
+
+    canvas {
+      width: 100%;
+      border-radius: 24px;
+      border: 1px solid #dccfaf;
+      background: var(--canvas);
+      box-shadow: 0 24px 50px rgba(95, 75, 34, 0.1);
+    }
+
+    aside {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(10px);
+      border: 1px solid #dccfaf;
+      border-radius: 24px;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .stat {
+      display: grid;
+      gap: 4px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .stat strong {
+      font-size: 1.35rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>LattPath Visualizer</h1>
+      <p>
+        Load any planner JSON emitted by <code>lattpath</code> to inspect explored states, path cells, and the final
+        heading-aware route. The page opens with a bundled sample and also supports loading planner JSON files directly.
+      </p>
+    </section>
+
+    <section class="controls">
+      <button id="playPause">Pause</button>
+      <label>Progress <input id="progress" type="range" min="0" max="1" step="0.001" value="0" /></label>
+      <label>Speed <input id="speed" type="range" min="0.25" max="3" step="0.25" value="1" /></label>
+      <input id="fileInput" type="file" accept=".json,application/json" />
+      <span id="status">Loading bundled sample…</span>
+    </section>
+
+    <section class="layout">
+      <canvas id="stage" width="960" height="620"></canvas>
+      <aside>
+        <div class="stat"><span>Scenario</span><strong id="scenarioName">-</strong></div>
+        <div class="stat"><span>Expanded states</span><strong id="expandedCount">-</strong></div>
+        <div class="stat"><span>Path cost</span><strong id="pathCost">-</strong></div>
+        <div class="stat"><span>Runtime</span><strong id="runtimeMs">-</strong></div>
+        <div class="stat"><span>Path cells shown</span><strong id="pathShown">-</strong></div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="./demo-plan.js"></script>
+  <script>
+    const canvas = document.getElementById("stage");
+    const context = canvas.getContext("2d");
+    const progressInput = document.getElementById("progress");
+    const speedInput = document.getElementById("speed");
+    const playPauseButton = document.getElementById("playPause");
+    const fileInput = document.getElementById("fileInput");
+    const statusLabel = document.getElementById("status");
+    const statScenario = document.getElementById("scenarioName");
+    const statExpanded = document.getElementById("expandedCount");
+    const statPathCost = document.getElementById("pathCost");
+    const statRuntime = document.getElementById("runtimeMs");
+    const statPathShown = document.getElementById("pathShown");
+
+    const headingVectors = [
+      [1, 0],
+      [1, 1],
+      [0, 1],
+      [-1, 1],
+      [-1, 0],
+      [-1, -1],
+      [0, -1],
+      [1, -1],
+    ];
+
+    let plan = null;
+    let playing = true;
+    let progress = 0;
+    let lastTimestamp = 0;
+
+    function blend(a, b, ratio) {
+      return a.map((value, index) => Math.round(value + ((b[index] - value) * ratio)));
+    }
+
+    function rgb(color) {
+      return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+    }
+
+    function layout() {
+      if (!plan) {
+        return null;
+      }
+
+      const width = plan.grid.width;
+      const height = plan.grid.height;
+      const margin = 30;
+      const cell = Math.min(
+        (canvas.width - margin * 2) / width,
+        (canvas.height - margin * 2) / height
+      );
+
+      return { width, height, margin, cell };
+    }
+
+    function centerOf(config, x, y) {
+      return {
+        x: config.margin + (x + 0.5) * config.cell,
+        y: canvas.height - config.margin - (y + 0.5) * config.cell,
+      };
+    }
+
+    function topLeftOf(config, x, y) {
+      return {
+        x: config.margin + x * config.cell,
+        y: canvas.height - config.margin - (y + 1) * config.cell,
+      };
+    }
+
+    function drawFrame() {
+      if (!plan) {
+        return;
+      }
+
+      const config = layout();
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = "#fcfbf7";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      const gridLeft = config.margin;
+      const gridTop = config.margin;
+      const gridWidth = config.width * config.cell;
+      const gridHeight = config.height * config.cell;
+
+      context.fillStyle = "#fffdf6";
+      context.fillRect(gridLeft, gridTop, gridWidth, gridHeight);
+
+      context.strokeStyle = "#e7dcc4";
+      context.lineWidth = 1;
+      for (let x = 0; x <= config.width; x += 1) {
+        const px = gridLeft + x * config.cell;
+        context.beginPath();
+        context.moveTo(px, gridTop);
+        context.lineTo(px, gridTop + gridHeight);
+        context.stroke();
+      }
+      for (let y = 0; y <= config.height; y += 1) {
+        const py = gridTop + y * config.cell;
+        context.beginPath();
+        context.moveTo(gridLeft, py);
+        context.lineTo(gridLeft + gridWidth, py);
+        context.stroke();
+      }
+
+      const visibleExpanded = Math.round(plan.expanded.length * Math.min(progress * 1.35, 1));
+      const expansionStart = [191, 219, 254];
+      const expansionEnd = [30, 64, 175];
+      plan.expanded.slice(0, visibleExpanded).forEach((entry, index) => {
+        const ratio = plan.expanded.length > 1 ? index / (plan.expanded.length - 1) : 0;
+        const point = centerOf(config, entry.x, entry.y);
+        context.fillStyle = rgb(blend(expansionStart, expansionEnd, ratio));
+        context.beginPath();
+        context.arc(point.x, point.y, Math.max(2, config.cell * 0.13), 0, Math.PI * 2);
+        context.fill();
+      });
+
+      context.fillStyle = "#1f2937";
+      plan.obstacles.forEach((entry) => {
+        const point = topLeftOf(config, entry.x, entry.y);
+        context.fillRect(point.x + 3, point.y + 3, config.cell - 6, config.cell - 6);
+      });
+
+      const pathProgress = Math.max(0, (progress - 0.2) / 0.8);
+      const visiblePathCells = Math.max(1, Math.round(plan.path.cells.length * pathProgress));
+      const visibleStates = Math.max(1, Math.round(plan.path.states.length * pathProgress));
+
+      context.strokeStyle = "#ea580c";
+      context.lineWidth = Math.max(3, config.cell * 0.18);
+      context.lineJoin = "round";
+      context.lineCap = "round";
+      context.beginPath();
+      plan.path.cells.slice(0, visiblePathCells).forEach((entry, index) => {
+        const point = centerOf(config, entry.x, entry.y);
+        if (index === 0) {
+          context.moveTo(point.x, point.y);
+        } else {
+          context.lineTo(point.x, point.y);
+        }
+      });
+      context.stroke();
+
+      context.fillStyle = "#0f766e";
+      const start = centerOf(config, plan.start.x, plan.start.y);
+      context.beginPath();
+      context.arc(start.x, start.y, config.cell * 0.22, 0, Math.PI * 2);
+      context.fill();
+
+      context.fillStyle = "#b91c1c";
+      const goal = centerOf(config, plan.goal.x, plan.goal.y);
+      context.beginPath();
+      context.arc(goal.x, goal.y, config.cell * 0.24, 0, Math.PI * 2);
+      context.fill();
+
+      const vehicleState = plan.path.states[Math.min(visibleStates - 1, plan.path.states.length - 1)];
+      if (vehicleState) {
+        const point = centerOf(config, vehicleState.x, vehicleState.y);
+        const [dx, dy] = headingVectors[vehicleState.heading];
+        context.strokeStyle = "#b45309";
+        context.fillStyle = "#b45309";
+        context.lineWidth = Math.max(2, config.cell * 0.1);
+        context.beginPath();
+        context.arc(point.x, point.y, config.cell * 0.15, 0, Math.PI * 2);
+        context.fill();
+
+        const tipX = point.x + dx * config.cell * 0.34;
+        const tipY = point.y - dy * config.cell * 0.34;
+        context.beginPath();
+        context.moveTo(point.x, point.y);
+        context.lineTo(tipX, tipY);
+        context.stroke();
+      }
+
+      statScenario.textContent = plan.scenario;
+      statExpanded.textContent = String(plan.stats.expanded_states);
+      statPathCost.textContent = plan.stats.path_cost.toFixed(1);
+      statRuntime.textContent = `${plan.stats.runtime_ms.toFixed(2)} ms`;
+      statPathShown.textContent = `${visiblePathCells} / ${plan.path.cells.length}`;
+    }
+
+    function tick(timestamp) {
+      if (!lastTimestamp) {
+        lastTimestamp = timestamp;
+      }
+      const delta = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+
+      if (playing && plan) {
+        const speed = Number(speedInput.value);
+        progress = (progress + (delta / 9000) * speed) % 1;
+        progressInput.value = String(progress);
+      }
+
+      drawFrame();
+      requestAnimationFrame(tick);
+    }
+
+    function loadPlanData(data) {
+      plan = data;
+      progress = 0;
+      progressInput.value = "0";
+      statusLabel.textContent = `Loaded ${data.scenario}`;
+      drawFrame();
+    }
+
+    async function loadBundledSample() {
+      if (window.LATTPATH_BUNDLED_PLAN) {
+        loadPlanData(window.LATTPATH_BUNDLED_PLAN);
+        return;
+      }
+      try {
+        const response = await fetch("../artifacts/downtown_plan.json");
+        if (!response.ok) {
+          throw new Error("Bundled sample not available over fetch.");
+        }
+        loadPlanData(await response.json());
+      } catch (error) {
+        statusLabel.textContent = "Open a planner JSON file to start visualizing.";
+      }
+    }
+
+    playPauseButton.addEventListener("click", () => {
+      playing = !playing;
+      playPauseButton.textContent = playing ? "Pause" : "Play";
+    });
+
+    progressInput.addEventListener("input", () => {
+      progress = Number(progressInput.value);
+      drawFrame();
+    });
+
+    fileInput.addEventListener("change", async (event) => {
+      const [file] = event.target.files || [];
+      if (!file) {
+        return;
+      }
+      const text = await file.text();
+      loadPlanData(JSON.parse(text));
+    });
+
+    requestAnimationFrame(tick);
+    loadBundledSample();
+  </script>
+</body>
+</html>
