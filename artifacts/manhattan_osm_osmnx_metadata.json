@@ -1,0 +1,33 @@
+{
+  "city_id": "manhattan",
+  "display_name": "Manhattan",
+  "city_config": "/Users/agupta/Desktop/Programming/interview/LattPath/configs/cities/manhattan.json",
+  "backend": "osmnx",
+  "output_tag": "osmnx",
+  "full_bbox": {
+    "west": -74.03,
+    "south": 40.699,
+    "east": -73.9,
+    "north": 40.882
+  },
+  "district_bbox": {
+    "west": -74.012,
+    "south": 40.738,
+    "east": -73.968,
+    "north": 40.773
+  },
+  "route_scenario": "manhattan_osm_osmnx",
+  "district_scenario": "manhattan_midtown_osm_osmnx",
+  "source": "osmnx_xml_tiles",
+  "tile_count": 70,
+  "merged_xml_file": "/Users/agupta/Desktop/Programming/interview/LattPath/data/osm_tiles/manhattan_osmnx_merged.osm",
+  "node_count": 1063644,
+  "edge_count": 107946,
+  "polyline_count": 107946,
+  "crop": {
+    "min_x": 25,
+    "min_y": 71,
+    "max_x": 85,
+    "max_y": 135
+  }
+}

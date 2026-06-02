@@ -1,0 +1,82 @@
+{
+  "agents": [
+    {
+      "id": "agent_1",
+      "start": {
+        "x": 5,
+        "y": 3,
+        "heading": 1
+      },
+      "goal": {
+        "x": 51,
+        "y": 59,
+        "heading": 0
+      }
+    },
+    {
+      "id": "agent_2",
+      "start": {
+        "x": 53,
+        "y": 3,
+        "heading": 4
+      },
+      "goal": {
+        "x": 15,
+        "y": 54,
+        "heading": 4
+      }
+    },
+    {
+      "id": "agent_3",
+      "start": {
+        "x": 4,
+        "y": 16,
+        "heading": 1
+      },
+      "goal": {
+        "x": 42,
+        "y": 53,
+        "heading": 1
+      }
+    },
+    {
+      "id": "agent_4",
+      "start": {
+        "x": 50,
+        "y": 11,
+        "heading": 3
+      },
+      "goal": {
+        "x": 15,
+        "y": 48,
+        "heading": 2
+      }
+    },
+    {
+      "id": "agent_5",
+      "start": {
+        "x": 11,
+        "y": 5,
+        "heading": 2
+      },
+      "goal": {
+        "x": 54,
+        "y": 39,
+        "heading": 2
+      }
+    },
+    {
+      "id": "agent_6",
+      "start": {
+        "x": 46,
+        "y": 7,
+        "heading": 3
+      },
+      "goal": {
+        "x": 17,
+        "y": 43,
+        "heading": 3
+      }
+    }
+  ]
+}
