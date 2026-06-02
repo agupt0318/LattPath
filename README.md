@@ -111,7 +111,7 @@ The repo now ships two Manhattan build modes over the same city config:
 - `custom`: a lightweight non-OSMnx path that rasterizes driving geometry from cached OpenStreetMap XML or a local `.osm.pbf`
 - `osmnx`: an OSMnx-backed path that first builds a directed street graph, imputes edge speeds/travel times, then rasterizes that graph into the planner format
 
-Both modes still end in the same lattice-planner input format, but they do not produce the same street raster. The `osmnx` backend yields a denser directed graph model, so it is a better stress test for whether LattPath is genuinely reducing search work instead of just benefitting from a sparse raster.
+Both modes still end in the same lattice-planner input format, but they reach it through different ingestion paths. In the current committed Manhattan artifacts, the cached-XML `custom` path and the `osmnx` path now produce almost the same full-route raster, so the backend comparison is more about reproducible build plumbing than about radically different planner input on this slice.
 
 ### Route demo
 
@@ -121,10 +121,10 @@ Both modes still end in the same lattice-planner input format, but they do not p
 
 On the committed full-Manhattan route with the `custom` backend:
 
-- `LattPath`: `9.85 ms`, `485` expanded states, `262.05` path cost
-- `A*`: `50.68 ms`, `15,660` expanded states, `313.0` path cost
+- `LattPath`: `79.47 ms`, `9,459` expanded states, `149.95` path cost
+- `A*`: `74.41 ms`, `14,426` expanded states, `172.6` path cost
 
-That is roughly a `5.1x` runtime win for `LattPath` and about `32.3x` fewer state expansions.
+On this current cached-XML build, `LattPath` still expands fewer states, but the runtime difference is small and noisy rather than a dramatic win.
 
 ![Manhattan OSMnx route](assets/manhattan_osm_osmnx_lattpath.gif)
 
@@ -135,7 +135,7 @@ On the same route with the `osmnx` backend:
 - `LattPath`: `54.50 ms`, `9,459` expanded states, `149.95` path cost
 - `A*`: `53.50 ms`, `14,426` expanded states, `172.6` path cost
 
-Here the route-planning advantage narrows sharply: `LattPath` still expands fewer states, but on this denser graph-derived raster it is roughly at parity with `A*` on runtime. That is a useful result, because it shows the backend choice materially changes the search landscape.
+So on the current Manhattan route, the important takeaway is not a huge backend split. It is that both ingestion paths now land on nearly the same search problem, and on that problem `LattPath` still trims state expansions but not by enough to guarantee a runtime win.
 
 ### Coordination demo
 
@@ -147,14 +147,14 @@ Here the route-planning advantage narrows sharply: `LattPath` still expands fewe
 
 [OSMnx MP4](assets/manhattan_osmnx_coordination_race.mp4) · [OSMnx independent JSON](artifacts/manhattan_osmnx_independent_astar_simulation.json) · [OSMnx cooperative JSON](artifacts/manhattan_osmnx_cooperative_lattpath_simulation.json)
 
-The second Manhattan demo uses a `61 x 65` Midtown slice and six vehicles. In both backends, the simulation carries forward directional street information and per-cell free-flow speed estimates, then compares reactive independent `A*` cars against a communication-aware `LattPath` scheduler with shared spacetime reservations and route-overlap pair formation.
+The second Manhattan demo uses a `61 x 65` Midtown slice and six vehicles. In both backends, the simulation now carries forward directional street information and per-cell free-flow speed estimates, and it overlays traffic lights, stop-sign holds, acceleration-limited move timing, sensor-caution delays, and a simple human-driver reaction model on top of the same street raster.
 
-On the committed Midtown race, both backends currently produce the same outcome:
+On the committed Midtown race, both backends now converge to the same higher-fidelity pattern:
 
-- Independent `A*`: `4/6` agents finished within `272` ticks, `510` waits, `510` conflicts
-- Cooperative `LattPath`: `6/6` agents finished in `65` ticks, `0` waits, `0` conflicts
+- Independent `A*`: `6/6` agents finished in `268` ticks with about `896` wait events and at most `1` conflict
+- Cooperative `LattPath`: `6/6` agents finished in `134` ticks with about `300` wait events and `0` conflicts
 
-That is the behavior shown in `visualizer/manhattan.html` and in the backend videos above: the communication-aware planner clears the same street slice with full completion, no execution-time conflicts, and route-derived formations instead of arbitrary pairings.
+That is the behavior shown in `visualizer/manhattan.html` and in the backend videos above: once signals, stop holds, and reaction delays exist, the independent cars do eventually make it through, but they spend much more time yielding and hesitating. The communication-aware planner still clears the same street slice in roughly half the ticks while eliminating execution-time conflicts.
 
 ## A* vs LattPath
 
@@ -171,11 +171,12 @@ This repo is now closer to a street-network traffic simulation than it was befor
 - It now preserves directed street flow from OpenStreetMap when building the Midtown multi-agent scenario.
 - It now carries free-flow road-speed estimates from OpenStreetMap into the city network files so route selection is not purely uniform-grid cost.
 - It now has both a `custom` backend and an `osmnx` backend, so backend choice itself can be tested instead of assumed away.
+- It now overlays traffic lights, stop-sign holds, acceleration-limited move timing, sensor-caution delays, and a simple human-driver reaction model through generated district control files.
 - It now chooses agent headings from locally allowed road directions rather than forcing every car to spawn with the same orientation.
 - It now forms communication pairs from overlapping routes instead of from Manhattan-specific coordinate sorting.
 - It now uses generic city entrypoints plus a city config file in [`configs/cities/manhattan.json`](configs/cities/manhattan.json), so another city can be added by supplying a new bounding box, route, and district-agent definition.
 
-It still does not model traffic lights, stop-sign priority, acceleration envelopes, sensor uncertainty, or human-driver behavior. The cooperative scheduler also still runs in discrete cell-time ticks rather than continuous traffic time. So the right description is: an OSM-grounded, direction-aware, free-flow-weighted coordination simulation, not a full autonomous-vehicle stack.
+It still does not model lane-level signal phasing, perception stacks, stochastic human behavior, or continuous vehicle dynamics. The cooperative scheduler also still runs in discrete cell-time ticks rather than continuous traffic time. So the right description is: an OSM-grounded, direction-aware, control-aware coordination simulation, not a full autonomous-vehicle stack.
 
 ## Rebuild a city demo
 
@@ -196,7 +197,7 @@ LATTPATH_CITY_PBF=/path/to/city.osm.pbf \
 LATTPATH_CITY_CONFIG=configs/cities/manhattan.json \
 LATTPATH_CITY_BACKEND=custom \
 LATTPATH_OUTPUT_TAG=custom \
-tools/generate_city_demo.sh
+bash tools/generate_city_demo.sh
 ```
 
 To build the OSMnx variant instead:
@@ -206,7 +207,7 @@ LATTPATH_OSMNX_PYTHONPATH=/path/to/osmnx/site-packages \
 LATTPATH_CITY_CONFIG=configs/cities/manhattan.json \
 LATTPATH_CITY_BACKEND=osmnx \
 LATTPATH_OUTPUT_TAG=osmnx \
-tools/generate_city_demo.sh
+bash tools/generate_city_demo.sh
 ```
 
 To generate both backends back to back:
@@ -239,6 +240,7 @@ To add another city, copy [`configs/cities/manhattan.json`](configs/cities/manha
 - `tools/generate_city_backend_comparison.sh`: runs the `custom` and `osmnx` city demos side by side
 - `tools/generate_manhattan_demo.sh`: Manhattan convenience wrapper
 - `configs/cities/`: reusable city definitions for route and district scenarios
+- `artifacts/*_controls.json`: generated traffic-control and behavior overlays for district simulations
 - `artifacts/`: sample planner outputs committed to the repo
 - `assets/`: generated media used by this README
 - `LatticeDstarPathplanning/`: legacy prototype snapshot
