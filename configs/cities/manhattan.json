@@ -96,5 +96,63 @@
         }
       }
     ]
+  },
+  "simulation": {
+    "tick_seconds": 1.0,
+    "vehicle_model": {
+      "max_speed_mps": 12.0,
+      "acceleration_mps2": 2.8,
+      "turn_speed_scale": 0.6
+    },
+    "sensor_model": {
+      "position_sigma_cells": 0.45,
+      "risk_weight": 0.35,
+      "caution_ticks": 1,
+      "communication_discount": 0.5
+    },
+    "human_driver_model": {
+      "reaction_delay_ticks": 1,
+      "intersection_scan_ticks": 1
+    },
+    "traffic_lights": [
+      {
+        "id": "hudson_42nd",
+        "lat": 40.7602,
+        "lon": -74.0008,
+        "cycle_ticks": 8,
+        "green_ticks": 4,
+        "offset_ticks": 0
+      },
+      {
+        "id": "broadway_46th",
+        "lat": 40.759,
+        "lon": -73.9857,
+        "cycle_ticks": 10,
+        "green_ticks": 5,
+        "offset_ticks": 2
+      },
+      {
+        "id": "park_49th",
+        "lat": 40.7567,
+        "lon": -73.9751,
+        "cycle_ticks": 12,
+        "green_ticks": 6,
+        "offset_ticks": 1
+      }
+    ],
+    "stop_signs": [
+      {
+        "id": "chelsea_service_1",
+        "lat": 40.7445,
+        "lon": -74.0055,
+        "hold_ticks": 1
+      },
+      {
+        "id": "east_midtown_service_1",
+        "lat": 40.7486,
+        "lon": -73.9728,
+        "hold_ticks": 1
+      }
+    ]
   }
 }

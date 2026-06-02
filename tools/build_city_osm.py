@@ -27,6 +27,13 @@ from build_manhattan_osm import (
 
 DEFAULT_CITY_CONFIG = Path("configs/cities/manhattan.json")
 
+FOUR_NEIGHBORS = (
+    (1, 0),
+    (-1, 0),
+    (0, 1),
+    (0, -1),
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build a city driving-network raster using either a custom OSM parser or OSMnx.")
@@ -50,6 +57,14 @@ def apply_output_tag(name: str, output_tag: str | None) -> str:
     return f"{name}_{output_tag}"
 
 
+def cached_tile_paths(tile_dir: Path, city_id: str) -> list:
+    return sorted(
+        path
+        for path in tile_dir.glob(f"{city_id}*.osm")
+        if not path.name.endswith("_osmnx_merged.osm")
+    )
+
+
 def build_city_names(city: dict, output_tag: str | None) -> dict:
     route_name = apply_output_tag(city["route"]["scenario_name"], output_tag)
     district_name = apply_output_tag(city["district"]["scenario_name"], output_tag)
@@ -59,6 +74,55 @@ def build_city_names(city: dict, output_tag: str | None) -> dict:
         "district_scenario": district_name,
         "city_prefix": city_prefix,
     }
+
+
+def infer_intersection_cells(grid: list, heading_counts: dict) -> list:
+    height = len(grid)
+    width = len(grid[0])
+    intersections = []
+
+    for y, row in enumerate(grid):
+        for x, cell in enumerate(row):
+            if cell != ".":
+                continue
+            free_neighbors = 0
+            for dx, dy in FOUR_NEIGHBORS:
+                nx = x + dx
+                ny = y + dy
+                if 0 <= nx < width and 0 <= ny < height and grid[ny][nx] == ".":
+                    free_neighbors += 1
+            allowed_headings = heading_counts.get((x, y), {})
+            if free_neighbors >= 3 or len(allowed_headings) >= 3:
+                intersections.append({"x": x, "y": y})
+
+    return intersections
+
+
+def serialize_controls(entries: list, bbox: dict, grid: list, defaults: dict) -> list:
+    controls = []
+    for entry in entries:
+        snapped = point_to_grid(entry, bbox, grid)
+        payload = {key: value for key, value in entry.items() if key not in {"lat", "lon"}}
+        payload.update(defaults)
+        payload["x"] = snapped[0]
+        payload["y"] = snapped[1]
+        controls.append(payload)
+    return controls
+
+
+def write_controls(path: Path, scenario_name: str, simulation: dict, traffic_lights: list, stop_signs: list, intersections: list) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "scenario": scenario_name,
+        "tick_seconds": float(simulation.get("tick_seconds", 1.0)),
+        "vehicle_model": simulation.get("vehicle_model", {}),
+        "sensor_model": simulation.get("sensor_model", {}),
+        "human_driver_model": simulation.get("human_driver_model", {}),
+        "traffic_lights": traffic_lights,
+        "stop_signs": stop_signs,
+        "intersection_cells": intersections,
+    }
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
 def load_custom_network(city: dict, args: argparse.Namespace) -> tuple:
@@ -78,9 +142,10 @@ def load_custom_network(city: dict, args: argparse.Namespace) -> tuple:
         })
     else:
         tile_dir = args.data_dir / "osm_tiles"
-        tile_paths = []
-        for row, column, bbox in tile_bbox(full_bbox):
-            tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"{city['city_id']}_r{row}_c{column}"))
+        tile_paths = cached_tile_paths(tile_dir, city["city_id"])
+        if not tile_paths:
+            for row, column, bbox in tile_bbox(full_bbox):
+                tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"{city['city_id']}_r{row}_c{column}"))
 
         nodes, ways = load_osm(tile_paths)
         full_grid, _, full_heading_counts, full_cell_stats = rasterize_bbox(nodes, ways, full_bbox, full_grid_width)
@@ -140,8 +205,7 @@ def load_osmnx_tile_graphs(city: dict, args: argparse.Namespace):
     ox.settings.useful_tags_way = list(useful_tags)
 
     tile_dir = args.data_dir / "osm_tiles"
-    cached_paths = sorted(tile_dir.glob(f"{city['city_id']}*.osm"))
-    tile_paths = list(cached_paths)
+    tile_paths = cached_tile_paths(tile_dir, city["city_id"])
 
     if not tile_paths:
         for row, column, bbox in tile_bbox(city["full_bbox"]):
@@ -267,6 +331,29 @@ def write_city_outputs(city: dict, names: dict, backend: str, args: argparse.Nam
         district_cell_stats,
     )
 
+    simulation = city.get("simulation", {})
+    traffic_lights = serialize_controls(
+        simulation.get("traffic_lights", []),
+        district_bbox,
+        district_grid,
+        {"cycle_ticks": 8, "green_ticks": 4, "offset_ticks": 0},
+    )
+    stop_signs = serialize_controls(
+        simulation.get("stop_signs", []),
+        district_bbox,
+        district_grid,
+        {"hold_ticks": 1},
+    )
+    intersections = infer_intersection_cells(district_grid, district_heading_counts)
+    write_controls(
+        args.artifacts_dir / f"{names['district_scenario']}_controls.json",
+        names["district_scenario"],
+        simulation,
+        traffic_lights,
+        stop_signs,
+        intersections,
+    )
+
     agents = []
     for entry in district["agents"]:
         start = point_to_grid(entry["start"], district_bbox, district_grid)
@@ -287,6 +374,7 @@ def write_city_outputs(city: dict, names: dict, backend: str, args: argparse.Nam
 
     write_agents(args.artifacts_dir / f"{names['district_scenario']}_agents.json", agents)
     metadata["crop"] = crop_info
+    metadata["controls_file"] = str(args.artifacts_dir / f"{names['district_scenario']}_controls.json")
     (args.artifacts_dir / f"{names['route_scenario']}_metadata.json").write_text(
         json.dumps(metadata, indent=2) + "\n",
         encoding="utf-8",

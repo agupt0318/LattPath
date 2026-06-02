@@ -66,6 +66,7 @@ fi
   --scenario-file "artifacts/${district_scenario}_grid.txt" \
   --agents-file "artifacts/${district_scenario}_agents.json" \
   --network-file "artifacts/${district_scenario}_network.json" \
+  --controls-file "artifacts/${district_scenario}_controls.json" \
   --output-prefix "$city_id" \
   --output-dir artifacts
 
