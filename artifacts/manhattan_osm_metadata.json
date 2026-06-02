@@ -1,16 +1,21 @@
 {
+  "city_id": "manhattan",
+  "display_name": "Manhattan",
+  "city_config": "/Users/agupta/Desktop/Programming/interview/LattPath/configs/cities/manhattan.json",
   "full_bbox": {
     "west": -74.03,
     "south": 40.699,
     "east": -73.9,
     "north": 40.882
   },
-  "midtown_bbox": {
+  "district_bbox": {
     "west": -74.012,
     "south": 40.738,
     "east": -73.968,
     "north": 40.773
   },
+  "route_scenario": "manhattan_osm",
+  "district_scenario": "manhattan_midtown_osm",
   "source": "pbf",
   "pbf_file": "/private/tmp/NewYork.osm.pbf",
   "edge_count": 34644,
