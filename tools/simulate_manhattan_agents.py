@@ -406,6 +406,8 @@ def simulate_independent_astar(scenario: dict, agents: list) -> dict:
             raise RuntimeError(f"Independent A* failed for {agent['id']}")
         planned_agents.append({
             "id": agent["id"],
+            "start": agent["start"],
+            "goal": agent["goal"],
             "timeline": plan["path"]["timeline"],
             "cursor": 0,
             "done_tick": None,

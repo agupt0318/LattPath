@@ -5,9 +5,20 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 
-python3 tools/build_manhattan_osm.py \
-  --data-dir data \
+if [[ -n "${LATTPATH_PYTHONPATH:-}" ]]; then
+  export PYTHONPATH="${LATTPATH_PYTHONPATH}${PYTHONPATH:+:$PYTHONPATH}"
+fi
+
+build_args=(
+  --data-dir data
   --artifacts-dir artifacts
+)
+
+if [[ -n "${LATTPATH_MANHATTAN_PBF:-}" ]]; then
+  build_args+=(--pbf-file "${LATTPATH_MANHATTAN_PBF}")
+fi
+
+python3 tools/build_manhattan_osm.py "${build_args[@]}"
 
 ./build/lattpath \
   --scenario-file artifacts/manhattan_osm_grid.txt \

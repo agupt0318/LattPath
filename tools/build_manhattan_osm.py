@@ -28,6 +28,7 @@ MIDTOWN_BBOX = {
 
 FULL_GRID_WIDTH = 180
 MIDTOWN_GRID_WIDTH = 120
+MIDTOWN_AGENT_HEADING = 2
 
 EXCLUDED_HIGHWAYS = {
     "bridleway",
@@ -102,6 +103,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Download and rasterize Manhattan OpenStreetMap roads.")
     parser.add_argument("--data-dir", type=Path, default=Path("data"), help="Directory for cached OSM tiles.")
     parser.add_argument("--artifacts-dir", type=Path, default=Path("artifacts"), help="Directory for generated outputs.")
+    parser.add_argument("--pbf-file", type=Path, help="Optional local .osm.pbf extract to use instead of live tile downloads.")
     return parser.parse_args()
 
 
@@ -209,6 +211,46 @@ def load_osm(tile_paths: list) -> tuple:
     return nodes, ways
 
 
+def load_driving_polylines_from_pbf(pbf_path: Path, bbox: dict) -> tuple:
+    try:
+        import shapely  # noqa: F401
+        from pyrosm import OSM
+    except ImportError as error:
+        raise RuntimeError(
+            "PBF support requires pyrosm and shapely to be importable. "
+            "Set PYTHONPATH to the environment where those packages are installed."
+        ) from error
+
+    osm = OSM(
+        str(pbf_path),
+        bounding_box=[bbox["west"], bbox["south"], bbox["east"], bbox["north"]],
+    )
+    edges = osm.get_network(network_type="driving")
+
+    polylines = []
+    for _, edge in edges.iterrows():
+        highway = edge.get("highway")
+        if isinstance(highway, list):
+            highway = highway[0] if highway else "residential"
+        geometry = edge.geometry
+        if geometry is None:
+            continue
+
+        if geometry.geom_type == "LineString":
+            geometries = [geometry]
+        elif geometry.geom_type == "MultiLineString":
+            geometries = list(geometry.geoms)
+        else:
+            continue
+
+        for line in geometries:
+            coords = [(lon, lat) for lon, lat in line.coords]
+            if len(coords) >= 2:
+                polylines.append({"coords": coords, "highway": highway or "residential"})
+
+    return polylines, len(edges)
+
+
 def infer_height(width: int, bbox: dict) -> int:
     lat_span = bbox["north"] - bbox["south"]
     lon_span = bbox["east"] - bbox["west"]
@@ -288,6 +330,28 @@ def rasterize_bbox(nodes: dict, ways: dict, bbox: dict, width: int) -> tuple:
     return grid, height
 
 
+def rasterize_polylines(polylines: list, bbox: dict, width: int) -> tuple:
+    height = infer_height(width, bbox)
+    grid = [["#" for _ in range(width)] for _ in range(height)]
+
+    for polyline in polylines:
+        projected = [
+            project_point(lat, lon, bbox, width, height)
+            for lon, lat in polyline["coords"]
+            if bbox["west"] <= lon <= bbox["east"] and bbox["south"] <= lat <= bbox["north"]
+        ]
+
+        if len(projected) < 2:
+            continue
+
+        radius = ROAD_WIDTH.get(polyline["highway"], 1)
+        for start, end in zip(projected, projected[1:]):
+            for cell_x, cell_y in bresenham(start, end):
+                draw_disk(grid, cell_x, cell_y, radius)
+
+    return grid, height
+
+
 def nearest_free_cell(grid: list, target_x: int, target_y: int) -> tuple:
     height = len(grid)
     width = len(grid[0])
@@ -355,15 +419,37 @@ def write_agents(path: Path, agents: list) -> None:
 def main() -> None:
     args = parse_args()
 
-    tile_dir = args.data_dir / "osm_tiles"
-    tile_paths = []
-    for row, column, bbox in tile_bbox(FULL_BBOX):
-        print(f"Downloading OSM tile r{row} c{column}: {bbox_to_query(bbox)}", flush=True)
-        tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"manhattan_r{row}_c{column}"))
+    metadata = {
+        "full_bbox": FULL_BBOX,
+        "midtown_bbox": MIDTOWN_BBOX,
+    }
 
-    nodes, ways = load_osm(tile_paths)
+    if args.pbf_file is not None:
+        print(f"Loading Manhattan driving network from {args.pbf_file}", flush=True)
+        polylines, edge_count = load_driving_polylines_from_pbf(args.pbf_file, FULL_BBOX)
+        full_grid, _ = rasterize_polylines(polylines, FULL_BBOX, FULL_GRID_WIDTH)
+        metadata.update({
+            "source": "pbf",
+            "pbf_file": str(args.pbf_file),
+            "edge_count": edge_count,
+            "polyline_count": len(polylines),
+        })
+    else:
+        tile_dir = args.data_dir / "osm_tiles"
+        tile_paths = []
+        for row, column, bbox in tile_bbox(FULL_BBOX):
+            print(f"Downloading OSM tile r{row} c{column}: {bbox_to_query(bbox)}", flush=True)
+            tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"manhattan_r{row}_c{column}"))
 
-    full_grid, _ = rasterize_bbox(nodes, ways, FULL_BBOX, FULL_GRID_WIDTH)
+        nodes, ways = load_osm(tile_paths)
+        full_grid, _ = rasterize_bbox(nodes, ways, FULL_BBOX, FULL_GRID_WIDTH)
+        metadata.update({
+            "source": "live_tiles",
+            "tile_count": len(tile_paths),
+            "node_count": len(nodes),
+            "way_count": len(ways),
+        })
+
     full_start = point_to_grid(FULL_ROUTE_POINTS["start"], FULL_BBOX, full_grid)
     full_goal = point_to_grid(FULL_ROUTE_POINTS["goal"], FULL_BBOX, full_grid)
     write_scenario(args.artifacts_dir / "manhattan_osm_grid.txt", "manhattan_osm", full_grid, full_start, full_goal)
@@ -380,20 +466,13 @@ def main() -> None:
         agents.append(
             {
                 "id": entry["id"],
-                "start": {"x": start[0], "y": start[1], "heading": 0},
-                "goal": {"x": goal[0], "y": goal[1], "heading": 0},
+                "start": {"x": start[0], "y": start[1], "heading": MIDTOWN_AGENT_HEADING},
+                "goal": {"x": goal[0], "y": goal[1], "heading": MIDTOWN_AGENT_HEADING},
             }
         )
 
     write_agents(args.artifacts_dir / "manhattan_midtown_agents.json", agents)
-    metadata = {
-        "full_bbox": FULL_BBOX,
-        "midtown_bbox": MIDTOWN_BBOX,
-        "tile_count": len(tile_paths),
-        "node_count": len(nodes),
-        "way_count": len(ways),
-        "crop": crop_info,
-    }
+    metadata["crop"] = crop_info
     (args.artifacts_dir / "manhattan_osm_metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 
 
