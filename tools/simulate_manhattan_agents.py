@@ -93,10 +93,25 @@ def parse_network(path: Path) -> dict:
         (entry["x"], entry["y"]): entry["dominant_heading"]
         for entry in payload.get("cells", [])
     }
+    free_flow = {
+        (entry["x"], entry["y"]): float(entry.get("free_flow_kph", 24.0))
+        for entry in payload.get("cells", [])
+    }
+    highways = {
+        (entry["x"], entry["y"]): entry.get("dominant_highway", "residential")
+        for entry in payload.get("cells", [])
+    }
     return {
+        "schema_version": payload.get("schema_version", 1),
+        "city_id": payload.get("city_id"),
+        "display_name": payload.get("display_name"),
         "scenario": payload.get("scenario"),
+        "meters_per_cell_x": float(payload.get("meters_per_cell_x", 1.0)),
+        "meters_per_cell_y": float(payload.get("meters_per_cell_y", 1.0)),
         "allowed": allowed,
         "dominant": dominant,
+        "free_flow_kph": free_flow,
+        "dominant_highway": highways,
     }
 
 
@@ -130,12 +145,6 @@ def heading_allowed(network: Optional[dict], x: int, y: int, heading: int) -> bo
     return normalize_heading(heading) in allowed
 
 
-def dominant_cell_heading(network: Optional[dict], x: int, y: int, fallback: int) -> int:
-    if not network:
-        return fallback
-    return network["dominant"].get((x, y), fallback)
-
-
 def desired_heading_between_points(start: tuple, goal: tuple) -> int:
     dx = goal[0] - start[0]
     dy = goal[1] - start[1]
@@ -154,6 +163,41 @@ def select_local_heading(scenario: dict, x: int, y: int, target: tuple, fallback
         return fallback
     desired = desired_heading_between_points((x, y), target)
     return min(allowed, key=lambda heading: heading_distance(heading, desired))
+
+
+def step_distance_meters(network: Optional[dict], heading: int) -> float:
+    if not network:
+        return 1.0
+    dx, dy = HEADING_VECTORS[normalize_heading(heading)]
+    return math.hypot(
+        abs(dx) * network.get("meters_per_cell_x", 1.0),
+        abs(dy) * network.get("meters_per_cell_y", 1.0),
+    )
+
+
+def cell_travel_seconds(network: Optional[dict], x: int, y: int, heading: int) -> float:
+    if not network:
+        return 1.0
+    speed_kph = network["free_flow_kph"].get((x, y), 24.0)
+    meters_per_second = max(speed_kph * 1000.0 / 3600.0, 0.1)
+    return step_distance_meters(network, heading) / meters_per_second
+
+
+def primitive_travel_cost(scenario: dict, start_heading: int, end_heading: int, traversed: list) -> float:
+    network = scenario.get("network")
+    if not traversed:
+        return 0.0
+
+    total = 0.0
+    heading = start_heading
+    for index, cell in enumerate(traversed):
+        if index == len(traversed) - 1:
+            heading = end_heading
+        total += cell_travel_seconds(network, cell[0], cell[1], heading)
+
+    if start_heading != end_heading:
+        total += 1.5
+    return total
 
 
 def normalize_agent_headings(scenario: dict, agents: list) -> list:
@@ -224,7 +268,7 @@ def apply_primitive(scenario: dict, pose: tuple, primitive: dict):
         "end": (x, y, end_heading),
         "cells": traversed,
         "name": primitive["name"],
-        "cost": primitive["cost"],
+        "cost": primitive_travel_cost(scenario, heading, end_heading, traversed),
     }
 
 

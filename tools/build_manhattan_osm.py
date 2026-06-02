@@ -12,6 +12,7 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import Optional
 
 DEFAULT_CITY_CONFIG = Path("configs/cities/manhattan.json")
 
@@ -43,6 +44,23 @@ ROAD_WIDTH = {
     "service": 1,
     "unclassified": 1,
     "living_street": 1,
+}
+
+DEFAULT_SPEED_KPH = {
+    "motorway": 88.5,
+    "motorway_link": 64.0,
+    "trunk": 72.0,
+    "trunk_link": 56.0,
+    "primary": 48.0,
+    "primary_link": 40.0,
+    "secondary": 40.0,
+    "secondary_link": 32.0,
+    "tertiary": 32.0,
+    "tertiary_link": 28.0,
+    "residential": 24.0,
+    "service": 16.0,
+    "unclassified": 24.0,
+    "living_street": 12.0,
 }
 
 HEADING_VECTORS = (
@@ -89,6 +107,58 @@ def load_city_config(path: Path) -> dict:
             raise ValueError(f"City config {path} district is missing required key: {key}")
 
     return config
+
+
+def meters_per_degree_lon(latitude_degrees: float) -> float:
+    latitude_radians = math.radians(latitude_degrees)
+    return 111320.0 * math.cos(latitude_radians)
+
+
+def estimate_grid_resolution_meters(bbox: dict, width: int, height: int) -> dict:
+    mid_lat = (bbox["south"] + bbox["north"]) / 2.0
+    width_m = (bbox["east"] - bbox["west"]) * meters_per_degree_lon(mid_lat)
+    height_m = (bbox["north"] - bbox["south"]) * 111132.0
+    return {
+        "meters_per_cell_x": width_m / max(width - 1, 1),
+        "meters_per_cell_y": height_m / max(height - 1, 1),
+    }
+
+
+def parse_maxspeed_kph(raw_value: object) -> Optional[float]:
+    if raw_value is None:
+        return None
+    if isinstance(raw_value, list):
+        candidates = [parse_maxspeed_kph(value) for value in raw_value]
+        candidates = [value for value in candidates if value is not None]
+        if candidates:
+            return sum(candidates) / len(candidates)
+        return None
+
+    text = str(raw_value).strip().lower()
+    if not text:
+        return None
+
+    pieces = re.split(r"[;|,]", text)
+    values = []
+    for piece in pieces:
+        match = re.search(r"(\d+(?:\.\d+)?)", piece)
+        if not match:
+            continue
+        value = float(match.group(1))
+        if "mph" in piece:
+            value *= 1.60934
+        values.append(value)
+
+    if values:
+        return sum(values) / len(values)
+    return None
+
+
+def infer_speed_kph(highway: str, maxspeed: object = None) -> float:
+    parsed_maxspeed = parse_maxspeed_kph(maxspeed)
+    if parsed_maxspeed is not None:
+        return parsed_maxspeed
+    return DEFAULT_SPEED_KPH.get(highway, DEFAULT_SPEED_KPH["residential"])
 
 
 def bbox_to_query(bbox: dict) -> str:
@@ -142,7 +212,7 @@ def download_bbox_recursive(bbox: dict, target_dir: Path, prefix: str, depth: in
     request = urllib.request.Request(
         osm_url(bbox),
         headers={
-            "User-Agent": "LattPath-Manhattan-Demo/1.0 (educational simulation)",
+            "User-Agent": "LattPath-City-Demo/1.0 (educational simulation)",
             "Accept": "application/xml,text/xml;q=0.9,*/*;q=0.8",
         },
     )
@@ -223,10 +293,13 @@ def extract_polylines_from_osm(nodes: dict, ways: dict) -> list:
         if reverse:
             coords = list(reversed(coords))
 
+        highway = way["tags"].get("highway", "residential")
+
         polylines.append({
             "coords": coords,
-            "highway": way["tags"].get("highway", "residential"),
+            "highway": highway,
             "bidirectional": not is_oneway,
+            "speed_kph": infer_speed_kph(highway, way["tags"].get("maxspeed")),
         })
 
     return polylines
@@ -271,6 +344,7 @@ def load_driving_polylines_from_pbf(pbf_path: Path, bbox: dict) -> tuple:
                     "coords": coords,
                     "highway": highway or "residential",
                     "bidirectional": False,
+                    "speed_kph": infer_speed_kph(highway or "residential", edge.get("maxspeed")),
                 })
 
     return polylines, len(edges)
@@ -330,7 +404,7 @@ def draw_disk(grid: list, cell_x: int, cell_y: int, radius: int) -> None:
                 grid[y][x] = "."
 
 
-def heading_from_segment(start: tuple, end: tuple) -> int | None:
+def heading_from_segment(start: tuple, end: tuple) -> Optional[int]:
     dx = end[0] - start[0]
     dy = end[1] - start[1]
     if dx == 0 and dy == 0:
@@ -343,7 +417,21 @@ def heading_from_segment(start: tuple, end: tuple) -> int | None:
     return None
 
 
-def paint_heading_disk(grid: list, heading_counts: dict, cell_x: int, cell_y: int, radius: int, headings: list) -> None:
+def new_cell_stats() -> dict:
+    return {"speed_sum": 0.0, "samples": 0, "highways": Counter()}
+
+
+def paint_heading_disk(
+    grid: list,
+    heading_counts: dict,
+    cell_stats: dict,
+    cell_x: int,
+    cell_y: int,
+    radius: int,
+    headings: list,
+    speed_kph: float,
+    highway: str,
+) -> None:
     height = len(grid)
     width = len(grid[0])
     for offset_y in range(-radius, radius + 1):
@@ -356,12 +444,17 @@ def paint_heading_disk(grid: list, heading_counts: dict, cell_x: int, cell_y: in
                 grid[y][x] = "."
                 for heading in headings:
                     heading_counts[(x, y)][heading] += 1
+                stats = cell_stats[(x, y)]
+                stats["speed_sum"] += speed_kph
+                stats["samples"] += 1
+                stats["highways"][highway] += 1
 
 
 def rasterize_polylines(polylines: list, bbox: dict, width: int) -> tuple:
     height = infer_height(width, bbox)
     grid = [["#" for _ in range(width)] for _ in range(height)]
     heading_counts = defaultdict(Counter)
+    cell_stats = defaultdict(new_cell_stats)
 
     for polyline in polylines:
         projected = [
@@ -382,9 +475,19 @@ def rasterize_polylines(polylines: list, bbox: dict, width: int) -> tuple:
             if polyline.get("bidirectional", False):
                 headings.append((heading + 4) % len(HEADING_VECTORS))
             for cell_x, cell_y in bresenham(start, end):
-                paint_heading_disk(grid, heading_counts, cell_x, cell_y, radius, headings)
+                paint_heading_disk(
+                    grid,
+                    heading_counts,
+                    cell_stats,
+                    cell_x,
+                    cell_y,
+                    radius,
+                    headings,
+                    polyline.get("speed_kph", DEFAULT_SPEED_KPH["residential"]),
+                    polyline.get("highway", "residential"),
+                )
 
-    return grid, height, heading_counts
+    return grid, height, heading_counts, cell_stats
 
 
 def rasterize_bbox(nodes: dict, ways: dict, bbox: dict, width: int) -> tuple:
@@ -473,16 +576,34 @@ def crop_heading_counts(heading_counts: dict, crop: dict) -> dict:
     return cropped
 
 
-def serialize_heading_counts(heading_counts: dict) -> list:
+def crop_cell_stats(cell_stats: dict, crop: dict) -> dict:
+    cropped = defaultdict(new_cell_stats)
+    for (x, y), stats in cell_stats.items():
+        if crop["min_x"] <= x <= crop["max_x"] and crop["min_y"] <= y <= crop["max_y"]:
+            target = cropped[(x - crop["min_x"], y - crop["min_y"])]
+            target["speed_sum"] += stats["speed_sum"]
+            target["samples"] += stats["samples"]
+            target["highways"].update(stats["highways"])
+    return cropped
+
+
+def serialize_network_cells(heading_counts: dict, cell_stats: dict) -> list:
     cells = []
     for (x, y), counts in sorted(heading_counts.items(), key=lambda item: (item[0][1], item[0][0])):
         allowed = [heading for heading, _ in counts.most_common()]
+        stats = cell_stats.get((x, y), new_cell_stats())
+        samples = max(int(stats["samples"]), 1)
+        dominant_highway = "residential"
+        if stats["highways"]:
+            dominant_highway = stats["highways"].most_common(1)[0][0]
         cells.append({
             "x": x,
             "y": y,
             "allowed_headings": allowed,
             "dominant_heading": allowed[0],
             "sample_count": int(sum(counts.values())),
+            "free_flow_kph": round(stats["speed_sum"] / samples, 3),
+            "dominant_highway": dominant_highway,
         })
     return cells
 
@@ -509,13 +630,28 @@ def write_agents(path: Path, agents: list) -> None:
     path.write_text(json.dumps({"agents": agents}, indent=2) + "\n", encoding="utf-8")
 
 
-def write_network(path: Path, scenario_name: str, width: int, height: int, heading_counts: dict) -> None:
+def write_network(
+    path: Path,
+    scenario_name: str,
+    city: dict,
+    bbox: dict,
+    width: int,
+    height: int,
+    heading_counts: dict,
+    cell_stats: dict,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    resolution = estimate_grid_resolution_meters(bbox, width, height)
     payload = {
+        "schema_version": 2,
+        "city_id": city["city_id"],
+        "display_name": city["display_name"],
         "scenario": scenario_name,
+        "bbox": bbox,
         "width": width,
         "height": height,
-        "cells": serialize_heading_counts(heading_counts),
+        **resolution,
+        "cells": serialize_network_cells(heading_counts, cell_stats),
     }
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
@@ -543,7 +679,7 @@ def main() -> None:
     if args.pbf_file is not None:
         print(f"Loading {city['display_name']} driving network from {args.pbf_file}", flush=True)
         polylines, edge_count = load_driving_polylines_from_pbf(args.pbf_file, full_bbox)
-        full_grid, _, full_heading_counts = rasterize_polylines(polylines, full_bbox, full_grid_width)
+        full_grid, _, full_heading_counts, full_cell_stats = rasterize_polylines(polylines, full_bbox, full_grid_width)
         metadata.update({
             "source": "pbf",
             "pbf_file": str(args.pbf_file),
@@ -558,7 +694,7 @@ def main() -> None:
             tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"{city_id}_r{row}_c{column}"))
 
         nodes, ways = load_osm(tile_paths)
-        full_grid, _, full_heading_counts = rasterize_bbox(nodes, ways, full_bbox, full_grid_width)
+        full_grid, _, full_heading_counts, full_cell_stats = rasterize_bbox(nodes, ways, full_bbox, full_grid_width)
         metadata.update({
             "source": "live_tiles",
             "tile_count": len(tile_paths),
@@ -578,13 +714,17 @@ def main() -> None:
     write_network(
         args.artifacts_dir / f"{route['scenario_name']}_network.json",
         route["scenario_name"],
+        city,
+        full_bbox,
         len(full_grid[0]),
         len(full_grid),
         full_heading_counts,
+        full_cell_stats,
     )
 
     district_grid, crop_info = crop_grid(full_grid, full_bbox, district_bbox)
     district_heading_counts = crop_heading_counts(full_heading_counts, crop_info)
+    district_cell_stats = crop_cell_stats(full_cell_stats, crop_info)
     district_start = point_to_grid(district["agents"][0]["start"], district_bbox, district_grid)
     district_goal = point_to_grid(district["agents"][0]["goal"], district_bbox, district_grid)
     write_scenario(
@@ -597,9 +737,12 @@ def main() -> None:
     write_network(
         args.artifacts_dir / f"{district['scenario_name']}_network.json",
         district["scenario_name"],
+        city,
+        district_bbox,
         len(district_grid[0]),
         len(district_grid),
         district_heading_counts,
+        district_cell_stats,
     )
 
     agents = []
