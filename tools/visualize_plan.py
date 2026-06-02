@@ -97,10 +97,12 @@ class Canvas:
 
 
 def layout(plan: dict) -> dict:
-    cell = 30
-    margin = 28
+    max_canvas_width = 1280
+    max_canvas_height = 820
     width = plan["grid"]["width"]
     height = plan["grid"]["height"]
+    cell = max(2, min(30, int(min(max_canvas_width / max(width, 1), max_canvas_height / max(height, 1)))))
+    margin = 28
     return {
         "cell": cell,
         "margin": margin,
@@ -151,8 +153,8 @@ def draw_base(canvas: Canvas, plan: dict, config: dict) -> None:
     goal = plan["goal"]
     start_x, start_y = grid_center(config, start["x"], start["y"])
     goal_x, goal_y = grid_center(config, goal["x"], goal["y"])
-    canvas.draw_circle(start_x, start_y, config["cell"] // 4, PALETTE["start"])
-    canvas.draw_circle(goal_x, goal_y, config["cell"] // 4, PALETTE["goal"])
+    canvas.draw_circle(start_x, start_y, max(2, config["cell"] // 4), PALETTE["start"])
+    canvas.draw_circle(goal_x, goal_y, max(2, config["cell"] // 4), PALETTE["goal"])
 
 
 def draw_expanded(canvas: Canvas, plan: dict, config: dict, count: int) -> None:
@@ -181,7 +183,7 @@ def draw_vehicle(canvas: Canvas, state: dict, config: dict) -> None:
     arrow_scale = config["cell"] * 0.32
     tip_x = int(round(center_x + (delta_x * arrow_scale)))
     tip_y = int(round(center_y - (delta_y * arrow_scale)))
-    canvas.draw_circle(center_x, center_y, config["cell"] // 6, PALETTE["vehicle"])
+    canvas.draw_circle(center_x, center_y, max(2, config["cell"] // 6), PALETTE["vehicle"])
     canvas.draw_line(center_x, center_y, tip_x, tip_y, PALETTE["vehicle"], thickness=max(2, config["cell"] // 10))
     wing = max(4, config["cell"] // 8)
     canvas.draw_line(tip_x, tip_y, tip_x - wing, tip_y + wing, PALETTE["vehicle"], thickness=2)
@@ -243,8 +245,8 @@ def write_svg(plan: dict, output_path: Path) -> None:
   <g>{"".join(expanded_circles)}</g>
   <polyline fill="none" stroke="#ea580c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="{' '.join(path_points)}" />
   <g>{"".join(heading_markers)}</g>
-  <circle cx="{grid_center(config, plan["start"]["x"], plan["start"]["y"])[0]}" cy="{grid_center(config, plan["start"]["x"], plan["start"]["y"])[1]}" r="{cell // 4}" fill="#0f766e" />
-  <circle cx="{grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[0]}" cy="{grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[1]}" r="{cell // 4}" fill="#b91c1c" />
+  <circle cx="{grid_center(config, plan["start"]["x"], plan["start"]["y"])[0]}" cy="{grid_center(config, plan["start"]["x"], plan["start"]["y"])[1]}" r="{max(2, cell // 4)}" fill="#0f766e" />
+  <circle cx="{grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[0]}" cy="{grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[1]}" r="{max(2, cell // 4)}" fill="#b91c1c" />
   <text x="{margin}" y="18" fill="#4b5563" font-family="Arial, sans-serif" font-size="16">LattPath demo: {plan["scenario"]}</text>
   <text x="{margin}" y="{height - 8}" fill="#4b5563" font-family="Arial, sans-serif" font-size="14">
     expanded={plan["stats"]["expanded_states"]} path_cost={plan["stats"]["path_cost"]:.1f} runtime_ms={plan["stats"]["runtime_ms"]:.2f}
