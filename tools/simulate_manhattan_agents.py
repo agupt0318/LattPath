@@ -101,6 +101,7 @@ def parse_network(path: Path) -> dict:
         (entry["x"], entry["y"]): entry.get("dominant_highway", "residential")
         for entry in payload.get("cells", [])
     }
+    max_free_flow_kph = max(free_flow.values(), default=24.0)
     return {
         "schema_version": payload.get("schema_version", 1),
         "city_id": payload.get("city_id"),
@@ -112,6 +113,7 @@ def parse_network(path: Path) -> dict:
         "dominant": dominant,
         "free_flow_kph": free_flow,
         "dominant_highway": highways,
+        "max_free_flow_kph": max_free_flow_kph,
     }
 
 
@@ -198,6 +200,26 @@ def primitive_travel_cost(scenario: dict, start_heading: int, end_heading: int, 
     if start_heading != end_heading:
         total += 1.5
     return total
+
+
+def remaining_travel_time_heuristic(scenario: dict, pose: tuple, goal: dict) -> float:
+    network = scenario.get("network")
+    dx = goal["x"] - pose[0]
+    dy = goal["y"] - pose[1]
+
+    if network:
+        meters = math.hypot(
+            dx * network.get("meters_per_cell_x", 1.0),
+            dy * network.get("meters_per_cell_y", 1.0),
+        )
+        max_speed_mps = max(network.get("max_free_flow_kph", 24.0) * 1000.0 / 3600.0, 0.1)
+        return (meters / max_speed_mps) + (0.25 * heading_distance(pose[2], goal["heading"]))
+
+    return math.hypot(dx, dy) + (0.25 * heading_distance(pose[2], goal["heading"]))
+
+
+def remaining_temporal_heuristic(pose: tuple, goal: dict) -> float:
+    return math.hypot(goal["x"] - pose[0], goal["y"] - pose[1]) + (0.25 * heading_distance(pose[2], goal["heading"]))
 
 
 def normalize_agent_headings(scenario: dict, agents: list) -> list:
@@ -338,7 +360,7 @@ def plan_spatial(scenario: dict, start: dict, goal: dict, primitives: tuple) -> 
                 continue
             g_cost[neighbor] = next_cost
             parents[neighbor] = (state, step)
-            heuristic = math.hypot(goal["x"] - neighbor[0], goal["y"] - neighbor[1])
+            heuristic = remaining_travel_time_heuristic(scenario, neighbor, goal)
             heapq.heappush(frontier, (next_cost + heuristic, next_cost, neighbor))
 
     return {"success": False}
@@ -459,7 +481,7 @@ def plan_temporal(
             if wait_cost + 1e-9 < g_cost.get(wait_state, float("inf")):
                 g_cost[wait_state] = wait_cost
                 parents[wait_state] = (state, {"name": "wait", "cells": [(x, y)]})
-                heuristic = math.hypot(goal["x"] - x, goal["y"] - y)
+                heuristic = remaining_temporal_heuristic((x, y, heading), goal)
                 heapq.heappush(frontier, (wait_cost + heuristic, wait_cost, wait_state))
 
         for primitive in primitives:
@@ -480,12 +502,12 @@ def plan_temporal(
             if preferred is not None and preferred != (step["end"][0], step["end"][1]):
                 preference_penalty = 0.2
 
-            next_cost = current_cost + step["cost"] + preference_penalty
+            next_cost = current_cost + primitive["cost"] + preference_penalty
             if next_cost + 1e-9 >= g_cost.get(neighbor, float("inf")):
                 continue
             g_cost[neighbor] = next_cost
             parents[neighbor] = (state, step)
-            heuristic = math.hypot(goal["x"] - step["end"][0], goal["y"] - step["end"][1])
+            heuristic = remaining_temporal_heuristic(step["end"], goal)
             heapq.heappush(frontier, (next_cost + heuristic, next_cost, neighbor))
 
     return {"success": False}
