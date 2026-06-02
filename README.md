@@ -1,26 +1,86 @@
 # LattPath
 
-Legacy C++ prototype for lattice-based path planning and traffic simulation experiments.
+Portable state-lattice path planning demo with a built-in visualizer and generated walkthrough media.
 
-## Overview
+![LattPath demo](assets/lattpath_demo.gif)
 
-This repository contains an early path-planning simulation codebase built around autonomous and manual vehicle agents, graph-based environment utilities, and experiments comparing different planning/control modes.
+[MP4 version](assets/lattpath_demo.mp4) · [Static SVG](assets/lattpath_demo.svg)
 
-The code appears to have been developed as a local Visual Studio project and currently includes machine-specific include paths. Treat this as an archived research/prototype snapshot rather than a plug-and-play package.
+## What this repo is now
 
-## Notable pieces
+`LattPath` now ships as a small, runnable path-planning project instead of a non-portable Visual Studio snapshot:
 
-- C++ simulation/control-flow scaffolding for autonomous and manual cars
-- Graph/environment utilities for path-planning experiments
-- Test-group logic for varying autonomous/manual vehicle ratios
-- Visual Studio project files from the original development setup
+- C++17 state-lattice planner over `(x, y, heading)` states
+- Heading-aware motion primitives: `forward`, `long_forward`, `left_arc`, and `right_arc`
+- Built-in demo scenarios with structured JSON output
+- Browser visualizer at [`visualizer/index.html`](visualizer/index.html)
+- SVG, GIF, and MP4 rendering pipeline for README-ready media
 
-## Status
+The original prototype files are still present under `LatticeDstarPathplanning/` as legacy reference material, but the supported entrypoint for the repo is the new planner in `src/`.
 
-Archived prototype. To make this production-ready, the next steps would be:
+## Quick start
 
-- Replace absolute local include paths with relative includes or a build system such as CMake
-- Remove generated IDE/build artifacts from version control
-- Add a reproducible build command
-- Document input data format and expected outputs
-- Add a small runnable example
+Build the planner:
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+List the bundled scenarios:
+
+```bash
+./build/lattpath --list-scenarios
+```
+
+Generate a sample plan:
+
+```bash
+./build/lattpath --scenario downtown --output artifacts/downtown_plan.json
+```
+
+That writes a JSON file containing:
+
+- the grid dimensions
+- the obstacle cells
+- every expanded search state
+- the recovered path states and traversed cells
+- summary stats such as search cost and runtime
+
+## Visualize a plan
+
+Open `visualizer/index.html` in a browser.
+
+The page includes a bundled downtown demo and also lets you load any planner JSON file with the file picker.
+
+You can also regenerate the static and animated media from the command line:
+
+```bash
+python3 tools/visualize_plan.py artifacts/downtown_plan.json --still-output assets/lattpath_demo.svg --video-output assets/lattpath_demo.gif
+python3 tools/visualize_plan.py artifacts/downtown_plan.json --video-output assets/lattpath_demo.mp4
+```
+
+`ffmpeg` is required for video output.
+
+## Repo layout
+
+- `src/` and `include/`: portable planner implementation and CLI
+- `visualizer/`: standalone HTML visualizer with a bundled sample plan
+- `tools/visualize_plan.py`: SVG and video renderer
+- `artifacts/`: sample planner outputs committed to the repo
+- `assets/`: generated media used by this README
+- `LatticeDstarPathplanning/`: legacy prototype snapshot
+
+## Validation
+
+The planner is covered by the CMake smoke tests:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+The committed sample outputs were generated from:
+
+- `downtown`
+- `warehouse`
+- `switchbacks`
