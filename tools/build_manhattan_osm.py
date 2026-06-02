@@ -131,7 +131,7 @@ def split_bbox(bbox: dict) -> list:
     ]
 
 
-def tile_bbox(bbox: dict, max_lon_span: float = 0.015, max_lat_span: float = 0.015) -> list:
+def tile_bbox(bbox: dict, max_lon_span: float = 0.03, max_lat_span: float = 0.03) -> list:
     lon_spans = max(1, math.ceil((bbox["east"] - bbox["west"]) / max_lon_span))
     lat_spans = max(1, math.ceil((bbox["north"] - bbox["south"]) / max_lat_span))
     tiles = []
