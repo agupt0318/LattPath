@@ -1,5 +1,6 @@
 #include "lattpath/planner.hpp"
 
+#include <filesystem>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,6 +11,7 @@ void print_usage() {
     std::cout
         << "Usage:\n"
         << "  lattpath --scenario <name> --algorithm <name> --output <path>\n"
+        << "  lattpath --scenario-file <path> --algorithm <name> --output <path>\n"
         << "  lattpath --benchmark-dense-suite --benchmark-iterations <count> --benchmark-output <path>\n"
         << "  lattpath --list-scenarios\n"
         << "  lattpath --list-algorithms\n";
@@ -33,6 +35,7 @@ void print_algorithms() {
 
 int main(int argc, char** argv) {
     std::string scenario_name = "downtown";
+    std::string scenario_file_path;
     std::string algorithm_name = "lattpath";
     std::string output_path;
     std::string benchmark_output_path;
@@ -45,6 +48,8 @@ int main(int argc, char** argv) {
         const std::string argument = argv[i];
         if (argument == "--scenario" && i + 1 < argc) {
             scenario_name = argv[++i];
+        } else if (argument == "--scenario-file" && i + 1 < argc) {
+            scenario_file_path = argv[++i];
         } else if (argument == "--algorithm" && i + 1 < argc) {
             algorithm_name = argv[++i];
         } else if (argument == "--output" && i + 1 < argc) {
@@ -100,13 +105,22 @@ int main(int argc, char** argv) {
     }
 
     if (output_path.empty()) {
-        output_path = "artifacts/" + scenario_name + "_" + algorithm_name + "_plan.json";
+        const std::string output_stem = scenario_file_path.empty()
+            ? scenario_name
+            : std::filesystem::path(scenario_file_path).stem().string();
+        output_path = "artifacts/" + output_stem + "_" + algorithm_name + "_plan.json";
     }
 
-    const auto scenario = lattpath::load_scenario(scenario_name);
+    const auto scenario = scenario_file_path.empty()
+        ? lattpath::load_scenario(scenario_name)
+        : lattpath::load_scenario_from_grid_file(scenario_file_path);
     if (!scenario.has_value()) {
-        std::cerr << "Unknown scenario: " << scenario_name << "\n";
-        print_scenarios();
+        if (scenario_file_path.empty()) {
+            std::cerr << "Unknown scenario: " << scenario_name << "\n";
+            print_scenarios();
+        } else {
+            std::cerr << "Failed to load scenario file: " << scenario_file_path << "\n";
+        }
         return 1;
     }
 

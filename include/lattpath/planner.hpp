@@ -89,6 +89,7 @@ struct BenchmarkResult {
 std::vector<std::string> scenario_names();
 std::vector<std::string> dense_suite_scenario_names();
 std::optional<Scenario> load_scenario(const std::string& name);
+std::optional<Scenario> load_scenario_from_grid_file(const std::string& path);
 
 std::vector<std::string> algorithm_names();
 std::optional<SearchAlgorithm> parse_algorithm(const std::string& name);

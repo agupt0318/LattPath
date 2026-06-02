@@ -7,8 +7,10 @@
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <queue>
+#include <sstream>
 #include <unordered_set>
 #include <utility>
 
@@ -594,6 +596,85 @@ std::optional<Scenario> load_scenario(const std::string& name) {
         }
     }
     return std::nullopt;
+}
+
+std::optional<Scenario> load_scenario_from_grid_file(const std::string& path) {
+    std::ifstream input(path);
+    if (!input.is_open()) {
+        return std::nullopt;
+    }
+
+    Scenario scenario;
+    scenario.name = std::filesystem::path(path).stem().string();
+
+    std::string line;
+    bool reading_grid = false;
+    std::vector<std::string> grid_lines;
+
+    while (std::getline(input, line)) {
+        if (line.empty()) {
+            continue;
+        }
+
+        if (!reading_grid) {
+            if (line.rfind("name ", 0) == 0) {
+                scenario.name = line.substr(5);
+                continue;
+            }
+
+            if (line.rfind("width ", 0) == 0) {
+                scenario.width = std::stoi(line.substr(6));
+                continue;
+            }
+
+            if (line.rfind("height ", 0) == 0) {
+                scenario.height = std::stoi(line.substr(7));
+                continue;
+            }
+
+            if (line.rfind("start ", 0) == 0) {
+                std::istringstream stream(line.substr(6));
+                stream >> scenario.start.x >> scenario.start.y >> scenario.start.heading;
+                continue;
+            }
+
+            if (line.rfind("goal ", 0) == 0) {
+                std::istringstream stream(line.substr(5));
+                stream >> scenario.goal.x >> scenario.goal.y >> scenario.goal.heading;
+                continue;
+            }
+
+            if (line == "grid") {
+                reading_grid = true;
+            }
+            continue;
+        }
+
+        grid_lines.push_back(line);
+    }
+
+    if (scenario.width <= 0 || scenario.height <= 0) {
+        return std::nullopt;
+    }
+
+    if (grid_lines.size() != static_cast<std::size_t>(scenario.height)) {
+        return std::nullopt;
+    }
+
+    for (int row = 0; row < scenario.height; ++row) {
+        const std::string& row_text = grid_lines[static_cast<std::size_t>(row)];
+        if (static_cast<int>(row_text.size()) != scenario.width) {
+            return std::nullopt;
+        }
+
+        for (int column = 0; column < scenario.width; ++column) {
+            if (row_text[static_cast<std::size_t>(column)] == '#') {
+                scenario.obstacles.push_back({column, scenario.height - 1 - row});
+            }
+        }
+    }
+
+    return scenario;
 }
 
 std::vector<std::string> algorithm_names() {
