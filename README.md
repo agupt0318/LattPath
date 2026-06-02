@@ -104,37 +104,57 @@ python3 tools/render_benchmark_video.py artifacts/dense_suite_benchmark.json --s
 python3 tools/render_benchmark_video.py artifacts/dense_suite_benchmark.json --scenario dense_city --video-output assets/lattpath_dense_benchmark.mp4
 ```
 
-## Manhattan OSM route
+## Manhattan backends
 
-![Manhattan OSM route](assets/manhattan_osm_lattpath.gif)
+The repo now ships two Manhattan build modes over the same city config:
 
-[MP4 version](assets/manhattan_osm_lattpath.mp4) · [Static SVG](assets/manhattan_osm_lattpath.svg) · [Scenario grid](artifacts/manhattan_osm_grid.txt)
+- `custom`: a lightweight non-OSMnx path that rasterizes driving geometry from cached OpenStreetMap XML or a local `.osm.pbf`
+- `osmnx`: an OSMnx-backed path that first builds a directed street graph, imputes edge speeds/travel times, then rasterizes that graph into the planner format
 
-The repo now also ships a real Manhattan street raster generated from OpenStreetMap road geometry. The committed `manhattan_osm` scenario covers a `180 x 335` slice of Manhattan from Battery Park toward Inwood, with the roads rasterized into the same heading-aware planner format as the toy demos. The builder also carries forward per-cell directionality and free-flow road-speed estimates from the OSM tags so the city pipeline can reuse the same metadata across other configs.
+Both modes still end in the same lattice-planner input format, but they do not produce the same street raster. The `osmnx` backend yields a denser directed graph model, so it is a better stress test for whether LattPath is genuinely reducing search work instead of just benefitting from a sparse raster.
 
-This full-route result is still a path-planning abstraction over an OSM-derived drivable footprint. It is useful for comparing search behavior on a real street layout, but it is not meant to claim full lane-level autonomous-driving fidelity by itself.
+### Route demo
 
-On that full Manhattan route:
+![Manhattan custom route](assets/manhattan_osm_custom_lattpath.gif)
 
-- `LattPath`: `10.00 ms`, `485` expanded states, `262.05` path cost
-- `A*`: `49.77 ms`, `15,660` expanded states, `313.0` path cost
+[Custom MP4](assets/manhattan_osm_custom_lattpath.mp4) · [Custom SVG](assets/manhattan_osm_custom_lattpath.svg) · [Custom grid](artifacts/manhattan_osm_custom_grid.txt)
 
-In this implementation, `LattPath` reaches the Manhattan goal about `5.0x` faster than the `A*` baseline and with about `32.3x` fewer state expansions.
+On the committed full-Manhattan route with the `custom` backend:
 
-## Manhattan coordination
+- `LattPath`: `9.85 ms`, `485` expanded states, `262.05` path cost
+- `A*`: `50.68 ms`, `15,660` expanded states, `313.0` path cost
 
-![Manhattan coordination race](assets/manhattan_coordination_race.gif)
+That is roughly a `5.1x` runtime win for `LattPath` and about `32.3x` fewer state expansions.
 
-[MP4 version](assets/manhattan_coordination_race.mp4) · [Independent A* JSON](artifacts/manhattan_independent_astar_simulation.json) · [Cooperative LattPath JSON](artifacts/manhattan_cooperative_lattpath_simulation.json)
+![Manhattan OSMnx route](assets/manhattan_osm_osmnx_lattpath.gif)
 
-The second Manhattan demo uses a `61 x 65` Midtown slice and six vehicles. Unlike the earlier version of this repo, the simulation now carries forward directional street information from OpenStreetMap into a per-cell heading model, and it attaches free-flow road-speed estimates to those cells for route selection. The independent baseline plans each car with `A*` on that constrained street raster and lets them resolve conflicts only reactively at execution time. The cooperative `LattPath` variant shares spacetime reservations between agents and pairs cars based on route overlap so they can move as a communicating lattice instead of six isolated planners.
+[OSMnx MP4](assets/manhattan_osm_osmnx_lattpath.mp4) · [OSMnx SVG](assets/manhattan_osm_osmnx_lattpath.svg) · [OSMnx grid](artifacts/manhattan_osm_osmnx_grid.txt)
 
-On the committed Midtown race:
+On the same route with the `osmnx` backend:
+
+- `LattPath`: `54.50 ms`, `9,459` expanded states, `149.95` path cost
+- `A*`: `53.50 ms`, `14,426` expanded states, `172.6` path cost
+
+Here the route-planning advantage narrows sharply: `LattPath` still expands fewer states, but on this denser graph-derived raster it is roughly at parity with `A*` on runtime. That is a useful result, because it shows the backend choice materially changes the search landscape.
+
+### Coordination demo
+
+![Manhattan custom coordination](assets/manhattan_custom_coordination_race.gif)
+
+[Custom MP4](assets/manhattan_custom_coordination_race.mp4) · [Custom independent JSON](artifacts/manhattan_custom_independent_astar_simulation.json) · [Custom cooperative JSON](artifacts/manhattan_custom_cooperative_lattpath_simulation.json)
+
+![Manhattan OSMnx coordination](assets/manhattan_osmnx_coordination_race.gif)
+
+[OSMnx MP4](assets/manhattan_osmnx_coordination_race.mp4) · [OSMnx independent JSON](artifacts/manhattan_osmnx_independent_astar_simulation.json) · [OSMnx cooperative JSON](artifacts/manhattan_osmnx_cooperative_lattpath_simulation.json)
+
+The second Manhattan demo uses a `61 x 65` Midtown slice and six vehicles. In both backends, the simulation carries forward directional street information and per-cell free-flow speed estimates, then compares reactive independent `A*` cars against a communication-aware `LattPath` scheduler with shared spacetime reservations and route-overlap pair formation.
+
+On the committed Midtown race, both backends currently produce the same outcome:
 
 - Independent `A*`: `4/6` agents finished within `272` ticks, `510` waits, `510` conflicts
 - Cooperative `LattPath`: `6/6` agents finished in `65` ticks, `0` waits, `0` conflicts
 
-That is the behavior shown in `visualizer/manhattan.html` and in the README video above: the communication-aware planner clears the same street slice with full completion, no execution-time conflicts, and route-derived formations instead of arbitrary pairings.
+That is the behavior shown in `visualizer/manhattan.html` and in the backend videos above: the communication-aware planner clears the same street slice with full completion, no execution-time conflicts, and route-derived formations instead of arbitrary pairings.
 
 ## A* vs LattPath
 
@@ -142,7 +162,7 @@ That is the behavior shown in `visualizer/manhattan.html` and in the README vide
 
 `LattPath` in this repo is a state-lattice planner. It still performs graph search, but the graph itself is different: the edges are reusable motion primitives that already encode feasible vehicle behavior and multiple spatial scales such as `forward`, `long_forward`, `cruise_forward`, `left_arc`, and `right_arc`. That means the planner can advance through the map with bigger, heading-aware moves instead of reconstructing the same longer motion from many tiny steps.
 
-So the difference is not that `A*` is "bad" and `LattPath` is "magic." `A*` is the generic search method. `LattPath` is the richer motion model used in this project. In the Manhattan demo, that richer lattice gives the search far fewer states to expand. In the Midtown multi-agent demo, the cooperative `LattPath` variant also adds shared reservations and lane-pair preferences, which independent `A*` cars simply do not use.
+So the difference is not that `A*` is "bad" and `LattPath` is "magic." `A*` is the generic search method. `LattPath` is the richer motion model used in this project. In the Manhattan demos, that richer lattice can give the search fewer states to expand, but the size of the runtime win depends strongly on how the street graph is modeled. In the Midtown multi-agent demo, the cooperative `LattPath` variant also adds shared reservations and lane-pair preferences, which independent `A*` cars simply do not use.
 
 ## Simulation fidelity
 
@@ -150,6 +170,7 @@ This repo is now closer to a street-network traffic simulation than it was befor
 
 - It now preserves directed street flow from OpenStreetMap when building the Midtown multi-agent scenario.
 - It now carries free-flow road-speed estimates from OpenStreetMap into the city network files so route selection is not purely uniform-grid cost.
+- It now has both a `custom` backend and an `osmnx` backend, so backend choice itself can be tested instead of assumed away.
 - It now chooses agent headings from locally allowed road directions rather than forcing every car to spawn with the same orientation.
 - It now forms communication pairs from overlapping routes instead of from Manhattan-specific coordinate sorting.
 - It now uses generic city entrypoints plus a city config file in [`configs/cities/manhattan.json`](configs/cities/manhattan.json), so another city can be added by supplying a new bounding box, route, and district-agent definition.
@@ -161,22 +182,43 @@ It still does not model traffic lights, stop-sign priority, acceleration envelop
 The repo includes a generic helper script:
 
 ```bash
-LATTPATH_CITY_CONFIG=configs/cities/manhattan.json tools/generate_city_demo.sh
+LATTPATH_CITY_CONFIG=configs/cities/manhattan.json \
+LATTPATH_CITY_BACKEND=custom \
+LATTPATH_OUTPUT_TAG=custom \
+tools/generate_city_demo.sh
 ```
 
 If you already have a local `.osm.pbf` extract and a local `pyrosm` environment, you can point the script at the faster path:
 
 ```bash
-LATTPATH_PYTHONPATH=/path/to/site-packages \
+LATTPATH_CUSTOM_PYTHONPATH=/path/to/custom/site-packages \
 LATTPATH_CITY_PBF=/path/to/city.osm.pbf \
 LATTPATH_CITY_CONFIG=configs/cities/manhattan.json \
+LATTPATH_CITY_BACKEND=custom \
+LATTPATH_OUTPUT_TAG=custom \
 tools/generate_city_demo.sh
 ```
 
-The Manhattan-specific wrapper still exists for convenience:
+To build the OSMnx variant instead:
 
 ```bash
-LATTPATH_MANHATTAN_PBF=/path/to/NewYork.osm.pbf tools/generate_manhattan_demo.sh
+LATTPATH_OSMNX_PYTHONPATH=/path/to/osmnx/site-packages \
+LATTPATH_CITY_CONFIG=configs/cities/manhattan.json \
+LATTPATH_CITY_BACKEND=osmnx \
+LATTPATH_OUTPUT_TAG=osmnx \
+tools/generate_city_demo.sh
+```
+
+To generate both backends back to back:
+
+```bash
+bash tools/generate_city_backend_comparison.sh
+```
+
+The Manhattan-specific wrapper still exists for convenience, but the generic backend-aware script is the recommended path:
+
+```bash
+LATTPATH_MANHATTAN_PBF=/path/to/NewYork.osm.pbf bash tools/generate_manhattan_demo.sh
 ```
 
 To add another city, copy [`configs/cities/manhattan.json`](configs/cities/manhattan.json), follow the schema in [`configs/cities/README.md`](configs/cities/README.md), change the city bounding box and district agent seeds, and run the same builder/simulator pipeline against that new config.
@@ -189,11 +231,12 @@ To add another city, copy [`configs/cities/manhattan.json`](configs/cities/manha
 - `tools/render_benchmark_video.py`: dense-suite comparison video renderer
 - `tools/render_city_race.py`: generic multi-agent city race renderer
 - `tools/render_manhattan_race.py`: Manhattan compatibility wrapper for the city race renderer
-- `tools/build_city_osm.py`: generic OpenStreetMap-to-grid city builder
-- `tools/build_manhattan_osm.py`: Manhattan compatibility wrapper for the city builder
+- `tools/build_city_osm.py`: generic city builder with `custom` and `osmnx` backends
+- `tools/build_manhattan_osm.py`: legacy/custom OpenStreetMap builder module retained for compatibility
 - `tools/simulate_city_agents.py`: generic multi-agent city simulator
 - `tools/simulate_manhattan_agents.py`: Manhattan compatibility wrapper for the city simulator
 - `tools/generate_city_demo.sh`: reproducible city demo pipeline
+- `tools/generate_city_backend_comparison.sh`: runs the `custom` and `osmnx` city demos side by side
 - `tools/generate_manhattan_demo.sh`: Manhattan convenience wrapper
 - `configs/cities/`: reusable city definitions for route and district scenarios
 - `artifacts/`: sample planner outputs committed to the repo
