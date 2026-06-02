@@ -10,7 +10,7 @@
       "goal": {
         "x": 51,
         "y": 59,
-        "heading": 0
+        "heading": 2
       }
     },
     {
@@ -18,7 +18,7 @@
       "start": {
         "x": 53,
         "y": 3,
-        "heading": 4
+        "heading": 3
       },
       "goal": {
         "x": 15,

@@ -19,7 +19,7 @@
   "route_scenario": "manhattan_osm_osmnx",
   "district_scenario": "manhattan_midtown_osm_osmnx",
   "source": "osmnx_xml_tiles",
-  "tile_count": 70,
+  "tile_count": 71,
   "merged_xml_file": "/Users/agupta/Desktop/Programming/interview/LattPath/data/osm_tiles/manhattan_osmnx_merged.osm",
   "node_count": 1063644,
   "edge_count": 107946,
@@ -29,5 +29,6 @@
     "min_y": 71,
     "max_x": 85,
     "max_y": 135
-  }
+  },
+  "controls_file": "/Users/agupta/Desktop/Programming/interview/LattPath/artifacts/manhattan_midtown_osm_osmnx_controls.json"
 }
