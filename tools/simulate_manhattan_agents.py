@@ -6,6 +6,7 @@ import json
 import math
 from collections import defaultdict
 from pathlib import Path
+from typing import Optional
 
 HEADING_VECTORS = (
     (1, 0),
@@ -120,7 +121,7 @@ def completed_agent_count(planned_agents: list, horizon: int) -> int:
     return sum(1 for agent in planned_agents if agent["done_tick"] is not None and agent["done_tick"] <= horizon)
 
 
-def heading_allowed(network: dict | None, x: int, y: int, heading: int) -> bool:
+def heading_allowed(network: Optional[dict], x: int, y: int, heading: int) -> bool:
     if not network:
         return True
     allowed = network["allowed"].get((x, y))
@@ -129,10 +130,53 @@ def heading_allowed(network: dict | None, x: int, y: int, heading: int) -> bool:
     return normalize_heading(heading) in allowed
 
 
-def dominant_cell_heading(network: dict | None, x: int, y: int, fallback: int) -> int:
+def dominant_cell_heading(network: Optional[dict], x: int, y: int, fallback: int) -> int:
     if not network:
         return fallback
     return network["dominant"].get((x, y), fallback)
+
+
+def desired_heading_between_points(start: tuple, goal: tuple) -> int:
+    dx = goal[0] - start[0]
+    dy = goal[1] - start[1]
+    if dx == 0 and dy == 0:
+        return 0
+    unit = (max(-1, min(1, dx)), max(-1, min(1, dy)))
+    return next(index for index, vector in enumerate(HEADING_VECTORS) if vector == unit)
+
+
+def select_local_heading(scenario: dict, x: int, y: int, target: tuple, fallback: int) -> int:
+    network = scenario.get("network")
+    if not network:
+        return fallback
+    allowed = network["allowed"].get((x, y))
+    if not allowed:
+        return fallback
+    desired = desired_heading_between_points((x, y), target)
+    return min(allowed, key=lambda heading: heading_distance(heading, desired))
+
+
+def normalize_agent_headings(scenario: dict, agents: list) -> list:
+    normalized = []
+    for agent in agents:
+        start = dict(agent["start"])
+        goal = dict(agent["goal"])
+        desired = desired_heading_between_points((start["x"], start["y"]), (goal["x"], goal["y"]))
+        step_dx, step_dy = HEADING_VECTORS[desired]
+        start["heading"] = select_local_heading(scenario, start["x"], start["y"], (goal["x"], goal["y"]), start["heading"])
+        goal["heading"] = select_local_heading(
+            scenario,
+            goal["x"],
+            goal["y"],
+            (goal["x"] + step_dx, goal["y"] + step_dy),
+            goal["heading"],
+        )
+        normalized.append({
+            "id": agent["id"],
+            "start": start,
+            "goal": goal,
+        })
+    return normalized
 
 
 def apply_primitive(scenario: dict, pose: tuple, primitive: dict):
@@ -700,6 +744,7 @@ def main() -> None:
     if args.network_file is not None:
         scenario["network"] = parse_network(args.network_file)
     agents = json.loads(args.agents_file.read_text(encoding="utf-8"))["agents"]
+    agents = normalize_agent_headings(scenario, agents)
     output_prefix = args.output_prefix or scenario["name"]
 
     args.output_dir.mkdir(parents=True, exist_ok=True)

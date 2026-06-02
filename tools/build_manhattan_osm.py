@@ -440,6 +440,31 @@ def dominant_heading(heading_counts: dict, cell: tuple, fallback: int = 0) -> in
     return counts.most_common(1)[0][0]
 
 
+def heading_distance(left: int, right: int) -> int:
+    raw = abs(left - right)
+    return min(raw, len(HEADING_VECTORS) - raw)
+
+
+def desired_heading(start: tuple, goal: tuple) -> int:
+    dx = goal[0] - start[0]
+    dy = goal[1] - start[1]
+    if dx == 0 and dy == 0:
+        return 0
+    unit = (max(-1, min(1, dx)), max(-1, min(1, dy)))
+    for index, vector in enumerate(HEADING_VECTORS):
+        if vector == unit:
+            return index
+    return 0
+
+
+def choose_agent_heading(heading_counts: dict, cell: tuple, target: tuple, fallback: int = 0) -> int:
+    counts = heading_counts.get(cell)
+    if not counts:
+        return fallback
+    desired = desired_heading(cell, target)
+    return min(counts.keys(), key=lambda heading: heading_distance(heading, desired))
+
+
 def crop_heading_counts(heading_counts: dict, crop: dict) -> dict:
     cropped = defaultdict(Counter)
     for (x, y), counts in heading_counts.items():
@@ -581,8 +606,14 @@ def main() -> None:
     for entry in district["agents"]:
         start = point_to_grid(entry["start"], district_bbox, district_grid)
         goal = point_to_grid(entry["goal"], district_bbox, district_grid)
-        start_heading = dominant_heading(district_heading_counts, start, fallback=0)
-        goal_heading = dominant_heading(district_heading_counts, goal, fallback=start_heading)
+        start_heading = choose_agent_heading(district_heading_counts, start, goal, fallback=0)
+        goal_dx, goal_dy = HEADING_VECTORS[start_heading]
+        goal_heading = choose_agent_heading(
+            district_heading_counts,
+            goal,
+            (goal[0] + goal_dx, goal[1] + goal_dy),
+            fallback=start_heading,
+        )
         agents.append(
             {
                 "id": entry["id"],

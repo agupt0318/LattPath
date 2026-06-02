@@ -42,7 +42,7 @@ python3 tools/visualize_plan.py \
 
 python3 tools/simulate_manhattan_agents.py \
   --scenario-file artifacts/manhattan_midtown_osm_grid.txt \
-  --agents-file artifacts/manhattan_midtown_agents.json \
+  --agents-file artifacts/manhattan_midtown_osm_agents.json \
   --network-file artifacts/manhattan_midtown_osm_network.json \
   --output-prefix manhattan \
   --output-dir artifacts
