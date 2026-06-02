@@ -9,19 +9,19 @@
       "leader": "agent_1",
       "follower": "agent_3",
       "side": "left",
+      "overlap_score": 163
+    },
+    {
+      "leader": "agent_4",
+      "follower": "agent_6",
+      "side": "left",
       "overlap_score": 102
     },
     {
-      "leader": "agent_2",
-      "follower": "agent_4",
-      "side": "left",
-      "overlap_score": 52
-    },
-    {
       "leader": "agent_5",
-      "follower": "agent_6",
+      "follower": "agent_2",
       "side": "right",
-      "overlap_score": 8
+      "overlap_score": 5
     }
   ],
   "history": [
@@ -39,15 +39,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 53,
-        "y": 3,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 50,
         "y": 11,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 46,
+        "y": 7,
         "heading": 3
       },
       {
@@ -57,10 +57,10 @@
         "heading": 2
       },
       {
-        "id": "agent_6",
-        "x": 46,
-        "y": 7,
-        "heading": 3
+        "id": "agent_2",
+        "x": 53,
+        "y": 3,
+        "heading": 2
       }
     ],
     [
@@ -77,15 +77,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 53,
-        "y": 4,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 49,
         "y": 12,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 45,
+        "y": 8,
         "heading": 3
       },
       {
@@ -95,10 +95,10 @@
         "heading": 2
       },
       {
-        "id": "agent_6",
-        "x": 45,
-        "y": 8,
-        "heading": 3
+        "id": "agent_2",
+        "x": 53,
+        "y": 4,
+        "heading": 2
       }
     ],
     [
@@ -115,28 +115,28 @@
         "heading": 1
       },
       {
+        "id": "agent_4",
+        "x": 48,
+        "y": 13,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 44,
+        "y": 9,
+        "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 10,
+        "y": 7,
+        "heading": 3
+      },
+      {
         "id": "agent_2",
-        "x": 52,
+        "x": 53,
         "y": 5,
-        "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 48,
-        "y": 13,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 10,
-        "y": 7,
-        "heading": 3
-      },
-      {
-        "id": "agent_6",
-        "x": 44,
-        "y": 9,
-        "heading": 3
+        "heading": 2
       }
     ],
     [
@@ -153,15 +153,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 51,
-        "y": 6,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 47,
         "y": 14,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 43,
+        "y": 10,
         "heading": 3
       },
       {
@@ -171,10 +171,10 @@
         "heading": 3
       },
       {
-        "id": "agent_6",
-        "x": 43,
-        "y": 10,
-        "heading": 3
+        "id": "agent_2",
+        "x": 53,
+        "y": 6,
+        "heading": 2
       }
     ],
     [
@@ -191,15 +191,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 51,
-        "y": 7,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 46,
         "y": 15,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 42,
+        "y": 11,
         "heading": 3
       },
       {
@@ -209,10 +209,10 @@
         "heading": 2
       },
       {
-        "id": "agent_6",
-        "x": 42,
-        "y": 11,
-        "heading": 3
+        "id": "agent_2",
+        "x": 53,
+        "y": 7,
+        "heading": 2
       }
     ],
     [
@@ -229,28 +229,28 @@
         "heading": 1
       },
       {
+        "id": "agent_4",
+        "x": 45,
+        "y": 16,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 41,
+        "y": 12,
+        "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 9,
+        "y": 10,
+        "heading": 2
+      },
+      {
         "id": "agent_2",
-        "x": 51,
+        "x": 53,
         "y": 8,
         "heading": 2
-      },
-      {
-        "id": "agent_4",
-        "x": 45,
-        "y": 16,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 9,
-        "y": 10,
-        "heading": 2
-      },
-      {
-        "id": "agent_6",
-        "x": 41,
-        "y": 12,
-        "heading": 3
       }
     ],
     [
@@ -267,28 +267,28 @@
         "heading": 1
       },
       {
+        "id": "agent_4",
+        "x": 44,
+        "y": 17,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 40,
+        "y": 13,
+        "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 9,
+        "y": 11,
+        "heading": 2
+      },
+      {
         "id": "agent_2",
-        "x": 50,
+        "x": 52,
         "y": 9,
         "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 44,
-        "y": 17,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 9,
-        "y": 11,
-        "heading": 2
-      },
-      {
-        "id": "agent_6",
-        "x": 40,
-        "y": 13,
-        "heading": 3
       }
     ],
     [
@@ -305,15 +305,15 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 49,
-        "y": 10,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 43,
         "y": 18,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 39,
+        "y": 14,
         "heading": 3
       },
       {
@@ -323,9 +323,9 @@
         "heading": 2
       },
       {
-        "id": "agent_6",
-        "x": 39,
-        "y": 14,
+        "id": "agent_2",
+        "x": 51,
+        "y": 10,
         "heading": 3
       }
     ],
@@ -343,15 +343,15 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 48,
-        "y": 11,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 42,
         "y": 19,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 38,
+        "y": 15,
         "heading": 3
       },
       {
@@ -361,9 +361,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 38,
-        "y": 15,
+        "id": "agent_2",
+        "x": 50,
+        "y": 11,
         "heading": 3
       }
     ],
@@ -381,15 +381,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 47,
-        "y": 12,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 41,
         "y": 20,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 37,
+        "y": 16,
         "heading": 3
       },
       {
@@ -399,9 +399,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 37,
-        "y": 16,
+        "id": "agent_2",
+        "x": 49,
+        "y": 12,
         "heading": 3
       }
     ],
@@ -417,105 +417,105 @@
         "x": 14,
         "y": 24,
         "heading": 1
+      },
+      {
+        "id": "agent_4",
+        "x": 40,
+        "y": 21,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 36,
+        "y": 17,
+        "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 12,
+        "y": 15,
+        "heading": 1
+      },
+      {
+        "id": "agent_2",
+        "x": 48,
+        "y": 13,
+        "heading": 3
+      }
+    ],
+    [
+      {
+        "id": "agent_1",
+        "x": 12,
+        "y": 14,
+        "heading": 1
+      },
+      {
+        "id": "agent_3",
+        "x": 15,
+        "y": 25,
+        "heading": 1
+      },
+      {
+        "id": "agent_4",
+        "x": 39,
+        "y": 22,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 35,
+        "y": 18,
+        "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 13,
+        "y": 15,
+        "heading": 0
+      },
+      {
+        "id": "agent_2",
+        "x": 47,
+        "y": 14,
+        "heading": 3
+      }
+    ],
+    [
+      {
+        "id": "agent_1",
+        "x": 12,
+        "y": 15,
+        "heading": 2
+      },
+      {
+        "id": "agent_3",
+        "x": 16,
+        "y": 26,
+        "heading": 1
+      },
+      {
+        "id": "agent_4",
+        "x": 38,
+        "y": 23,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 34,
+        "y": 19,
+        "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 14,
+        "y": 15,
+        "heading": 0
       },
       {
         "id": "agent_2",
         "x": 46,
-        "y": 13,
-        "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 40,
-        "y": 21,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 12,
         "y": 15,
-        "heading": 1
-      },
-      {
-        "id": "agent_6",
-        "x": 36,
-        "y": 17,
-        "heading": 3
-      }
-    ],
-    [
-      {
-        "id": "agent_1",
-        "x": 12,
-        "y": 14,
-        "heading": 1
-      },
-      {
-        "id": "agent_3",
-        "x": 15,
-        "y": 25,
-        "heading": 1
-      },
-      {
-        "id": "agent_2",
-        "x": 45,
-        "y": 14,
-        "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 39,
-        "y": 22,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 13,
-        "y": 15,
-        "heading": 0
-      },
-      {
-        "id": "agent_6",
-        "x": 35,
-        "y": 18,
-        "heading": 3
-      }
-    ],
-    [
-      {
-        "id": "agent_1",
-        "x": 12,
-        "y": 15,
-        "heading": 2
-      },
-      {
-        "id": "agent_3",
-        "x": 16,
-        "y": 26,
-        "heading": 1
-      },
-      {
-        "id": "agent_2",
-        "x": 44,
-        "y": 15,
-        "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 38,
-        "y": 23,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 14,
-        "y": 15,
-        "heading": 0
-      },
-      {
-        "id": "agent_6",
-        "x": 34,
-        "y": 19,
         "heading": 3
       }
     ],
@@ -533,15 +533,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 43,
-        "y": 16,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 37,
         "y": 24,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 33,
+        "y": 20,
         "heading": 3
       },
       {
@@ -551,9 +551,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 33,
-        "y": 20,
+        "id": "agent_2",
+        "x": 45,
+        "y": 16,
         "heading": 3
       }
     ],
@@ -571,15 +571,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 42,
-        "y": 17,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 36,
         "y": 25,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 32,
+        "y": 21,
         "heading": 3
       },
       {
@@ -589,9 +589,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 32,
-        "y": 21,
+        "id": "agent_2",
+        "x": 44,
+        "y": 17,
         "heading": 3
       }
     ],
@@ -606,106 +606,106 @@
         "id": "agent_3",
         "x": 19,
         "y": 29,
+        "heading": 1
+      },
+      {
+        "id": "agent_4",
+        "x": 35,
+        "y": 26,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 32,
+        "y": 22,
+        "heading": 2
+      },
+      {
+        "id": "agent_5",
+        "x": 17,
+        "y": 15,
+        "heading": 0
+      },
+      {
+        "id": "agent_2",
+        "x": 43,
+        "y": 18,
+        "heading": 3
+      }
+    ],
+    [
+      {
+        "id": "agent_1",
+        "x": 14,
+        "y": 19,
+        "heading": 1
+      },
+      {
+        "id": "agent_3",
+        "x": 20,
+        "y": 30,
+        "heading": 1
+      },
+      {
+        "id": "agent_4",
+        "x": 34,
+        "y": 27,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 32,
+        "y": 23,
+        "heading": 2
+      },
+      {
+        "id": "agent_5",
+        "x": 18,
+        "y": 15,
+        "heading": 0
+      },
+      {
+        "id": "agent_2",
+        "x": 42,
+        "y": 19,
+        "heading": 3
+      }
+    ],
+    [
+      {
+        "id": "agent_1",
+        "x": 15,
+        "y": 20,
+        "heading": 1
+      },
+      {
+        "id": "agent_3",
+        "x": 21,
+        "y": 31,
+        "heading": 1
+      },
+      {
+        "id": "agent_4",
+        "x": 33,
+        "y": 28,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 31,
+        "y": 24,
+        "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 19,
+        "y": 16,
         "heading": 1
       },
       {
         "id": "agent_2",
         "x": 41,
-        "y": 18,
-        "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 35,
-        "y": 26,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 17,
-        "y": 15,
-        "heading": 0
-      },
-      {
-        "id": "agent_6",
-        "x": 32,
-        "y": 22,
-        "heading": 2
-      }
-    ],
-    [
-      {
-        "id": "agent_1",
-        "x": 14,
-        "y": 19,
-        "heading": 1
-      },
-      {
-        "id": "agent_3",
-        "x": 20,
-        "y": 30,
-        "heading": 1
-      },
-      {
-        "id": "agent_2",
-        "x": 40,
-        "y": 19,
-        "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 34,
-        "y": 27,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 18,
-        "y": 15,
-        "heading": 0
-      },
-      {
-        "id": "agent_6",
-        "x": 32,
-        "y": 23,
-        "heading": 2
-      }
-    ],
-    [
-      {
-        "id": "agent_1",
-        "x": 15,
         "y": 20,
-        "heading": 1
-      },
-      {
-        "id": "agent_3",
-        "x": 21,
-        "y": 31,
-        "heading": 1
-      },
-      {
-        "id": "agent_2",
-        "x": 39,
-        "y": 20,
-        "heading": 3
-      },
-      {
-        "id": "agent_4",
-        "x": 33,
-        "y": 28,
-        "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 19,
-        "y": 16,
-        "heading": 1
-      },
-      {
-        "id": "agent_6",
-        "x": 31,
-        "y": 24,
         "heading": 3
       }
     ],
@@ -723,15 +723,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 38,
-        "y": 21,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 32,
         "y": 29,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 30,
+        "y": 25,
         "heading": 3
       },
       {
@@ -741,9 +741,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 30,
-        "y": 25,
+        "id": "agent_2",
+        "x": 40,
+        "y": 21,
         "heading": 3
       }
     ],
@@ -761,15 +761,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 37,
-        "y": 22,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 31,
         "y": 30,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 29,
+        "y": 26,
         "heading": 3
       },
       {
@@ -779,9 +779,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 29,
-        "y": 26,
+        "id": "agent_2",
+        "x": 39,
+        "y": 22,
         "heading": 3
       }
     ],
@@ -799,15 +799,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 36,
-        "y": 23,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 30,
         "y": 31,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 28,
+        "y": 27,
         "heading": 3
       },
       {
@@ -817,9 +817,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 28,
-        "y": 27,
+        "id": "agent_2",
+        "x": 38,
+        "y": 23,
         "heading": 3
       }
     ],
@@ -837,15 +837,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 35,
-        "y": 24,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 29,
         "y": 32,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 27,
+        "y": 28,
         "heading": 3
       },
       {
@@ -855,9 +855,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 27,
-        "y": 28,
+        "id": "agent_2",
+        "x": 37,
+        "y": 24,
         "heading": 3
       }
     ],
@@ -875,15 +875,15 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 34,
-        "y": 25,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 28,
         "y": 33,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 26,
+        "y": 29,
         "heading": 3
       },
       {
@@ -893,9 +893,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 26,
-        "y": 29,
+        "id": "agent_2",
+        "x": 36,
+        "y": 25,
         "heading": 3
       }
     ],
@@ -913,15 +913,15 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 33,
-        "y": 26,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 27,
         "y": 34,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 25,
+        "y": 30,
         "heading": 3
       },
       {
@@ -931,9 +931,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 25,
-        "y": 30,
+        "id": "agent_2",
+        "x": 35,
+        "y": 26,
         "heading": 3
       }
     ],
@@ -951,15 +951,15 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 32,
-        "y": 27,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 26,
         "y": 35,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 24,
+        "y": 31,
         "heading": 3
       },
       {
@@ -969,9 +969,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 24,
-        "y": 31,
+        "id": "agent_2",
+        "x": 34,
+        "y": 27,
         "heading": 3
       }
     ],
@@ -989,15 +989,15 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 31,
-        "y": 28,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 25,
         "y": 36,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 23,
+        "y": 32,
         "heading": 3
       },
       {
@@ -1007,9 +1007,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 23,
-        "y": 32,
+        "id": "agent_2",
+        "x": 33,
+        "y": 28,
         "heading": 3
       }
     ],
@@ -1027,28 +1027,28 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 30,
-        "y": 29,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 24,
         "y": 37,
         "heading": 3
-      },
-      {
-        "id": "agent_5",
-        "x": 28,
-        "y": 21,
-        "heading": 0
       },
       {
         "id": "agent_6",
         "x": 22,
         "y": 33,
         "heading": 3
+      },
+      {
+        "id": "agent_5",
+        "x": 28,
+        "y": 21,
+        "heading": 0
+      },
+      {
+        "id": "agent_2",
+        "x": 32,
+        "y": 29,
+        "heading": 3
       }
     ],
     [
@@ -1065,15 +1065,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 29,
-        "y": 30,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 23,
         "y": 38,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 21,
+        "y": 34,
         "heading": 3
       },
       {
@@ -1083,9 +1083,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 21,
-        "y": 34,
+        "id": "agent_2",
+        "x": 31,
+        "y": 30,
         "heading": 3
       }
     ],
@@ -1103,15 +1103,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 28,
-        "y": 31,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 22,
         "y": 39,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 20,
+        "y": 35,
         "heading": 3
       },
       {
@@ -1121,9 +1121,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 20,
-        "y": 35,
+        "id": "agent_2",
+        "x": 30,
+        "y": 31,
         "heading": 3
       }
     ],
@@ -1139,12 +1139,6 @@
         "x": 33,
         "y": 39,
         "heading": 1
-      },
-      {
-        "id": "agent_2",
-        "x": 28,
-        "y": 32,
-        "heading": 2
       },
       {
         "id": "agent_4",
@@ -1153,15 +1147,21 @@
         "heading": 4
       },
       {
+        "id": "agent_6",
+        "x": 19,
+        "y": 36,
+        "heading": 3
+      },
+      {
         "id": "agent_5",
         "x": 31,
         "y": 22,
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 19,
-        "y": 36,
+        "id": "agent_2",
+        "x": 29,
+        "y": 32,
         "heading": 3
       }
     ],
@@ -1179,16 +1179,16 @@
         "heading": 2
       },
       {
-        "id": "agent_2",
-        "x": 28,
-        "y": 33,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 20,
         "y": 39,
         "heading": 4
+      },
+      {
+        "id": "agent_6",
+        "x": 18,
+        "y": 37,
+        "heading": 3
       },
       {
         "id": "agent_5",
@@ -1197,9 +1197,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 18,
-        "y": 37,
+        "id": "agent_2",
+        "x": 28,
+        "y": 33,
         "heading": 3
       }
     ],
@@ -1217,15 +1217,15 @@
         "heading": 2
       },
       {
-        "id": "agent_2",
-        "x": 28,
-        "y": 34,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 19,
         "y": 40,
+        "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 38,
         "heading": 3
       },
       {
@@ -1235,9 +1235,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 38,
+        "id": "agent_2",
+        "x": 27,
+        "y": 34,
         "heading": 3
       }
     ],
@@ -1255,16 +1255,16 @@
         "heading": 2
       },
       {
-        "id": "agent_2",
-        "x": 28,
-        "y": 35,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 18,
         "y": 41,
         "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 39,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1273,10 +1273,10 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 39,
-        "heading": 2
+        "id": "agent_2",
+        "x": 26,
+        "y": 35,
+        "heading": 3
       }
     ],
     [
@@ -1293,16 +1293,16 @@
         "heading": 2
       },
       {
-        "id": "agent_2",
-        "x": 28,
-        "y": 36,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 17,
         "y": 42,
         "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 40,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1311,10 +1311,10 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 40,
-        "heading": 2
+        "id": "agent_2",
+        "x": 25,
+        "y": 36,
+        "heading": 3
       }
     ],
     [
@@ -1331,16 +1331,16 @@
         "heading": 2
       },
       {
-        "id": "agent_2",
-        "x": 28,
-        "y": 37,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 16,
         "y": 43,
         "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 41,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1349,10 +1349,10 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 41,
-        "heading": 2
+        "id": "agent_2",
+        "x": 24,
+        "y": 37,
+        "heading": 3
       }
     ],
     [
@@ -1369,16 +1369,16 @@
         "heading": 2
       },
       {
-        "id": "agent_2",
-        "x": 27,
-        "y": 38,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 44,
         "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 42,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1387,10 +1387,10 @@
         "heading": 2
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 42,
-        "heading": 2
+        "id": "agent_2",
+        "x": 23,
+        "y": 38,
+        "heading": 3
       }
     ],
     [
@@ -1407,16 +1407,16 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 26,
-        "y": 39,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 14,
         "y": 45,
         "heading": 3
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1425,10 +1425,10 @@
         "heading": 2
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 22,
+        "y": 39,
+        "heading": 3
       }
     ],
     [
@@ -1445,15 +1445,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 25,
-        "y": 40,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 14,
         "y": 46,
+        "heading": 2
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
         "heading": 2
       },
       {
@@ -1463,9 +1463,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 22,
+        "y": 40,
         "heading": 2
       }
     ],
@@ -1483,15 +1483,15 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 24,
-        "y": 41,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 14,
         "y": 47,
+        "heading": 2
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
         "heading": 2
       },
       {
@@ -1501,9 +1501,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 22,
+        "y": 41,
         "heading": 2
       }
     ],
@@ -1521,16 +1521,16 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 23,
-        "y": 42,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1539,10 +1539,10 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 21,
+        "y": 42,
+        "heading": 3
       }
     ],
     [
@@ -1559,16 +1559,16 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 22,
-        "y": 43,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1577,10 +1577,10 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
+        "id": "agent_2",
+        "x": 20,
         "y": 43,
-        "heading": 2
+        "heading": 3
       }
     ],
     [
@@ -1597,16 +1597,16 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 21,
-        "y": 44,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1615,10 +1615,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 19,
+        "y": 44,
+        "heading": 3
       }
     ],
     [
@@ -1635,16 +1635,16 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 20,
-        "y": 45,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1653,10 +1653,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 18,
+        "y": 45,
+        "heading": 3
       }
     ],
     [
@@ -1673,16 +1673,16 @@
         "heading": 1
       },
       {
-        "id": "agent_2",
-        "x": 19,
-        "y": 46,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1691,9 +1691,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 18,
+        "y": 46,
         "heading": 2
       }
     ],
@@ -1711,16 +1711,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 18,
-        "y": 47,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1729,9 +1729,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 18,
+        "y": 47,
         "heading": 2
       }
     ],
@@ -1749,16 +1749,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 18,
-        "y": 48,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1767,9 +1767,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 18,
+        "y": 48,
         "heading": 2
       }
     ],
@@ -1787,16 +1787,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 18,
-        "y": 49,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1805,9 +1805,9 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 18,
+        "y": 49,
         "heading": 2
       }
     ],
@@ -1825,16 +1825,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 18,
-        "y": 50,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1843,9 +1843,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 18,
+        "y": 50,
         "heading": 2
       }
     ],
@@ -1863,16 +1863,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 18,
-        "y": 51,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1881,9 +1881,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 18,
+        "y": 51,
         "heading": 2
       }
     ],
@@ -1901,16 +1901,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 18,
-        "y": 52,
-        "heading": 2
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1919,9 +1919,9 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
+        "id": "agent_2",
+        "x": 18,
+        "y": 52,
         "heading": 2
       }
     ],
@@ -1939,16 +1939,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 17,
-        "y": 53,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1957,10 +1957,10 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
+        "id": "agent_2",
         "x": 17,
-        "y": 43,
-        "heading": 2
+        "y": 53,
+        "heading": 3
       }
     ],
     [
@@ -1977,16 +1977,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 16,
-        "y": 54,
-        "heading": 3
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -1995,10 +1995,10 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 16,
+        "y": 54,
+        "heading": 3
       }
     ],
     [
@@ -2015,16 +2015,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2033,18 +2033,18 @@
         "heading": 1
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
       {
         "id": "agent_1",
-        "x": 41,
+        "x": 42,
         "y": 54,
-        "heading": 2
+        "heading": 1
       },
       {
         "id": "agent_3",
@@ -2053,16 +2053,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2071,16 +2071,16 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
       {
         "id": "agent_1",
-        "x": 41,
+        "x": 42,
         "y": 55,
         "heading": 2
       },
@@ -2091,16 +2091,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2109,16 +2109,16 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
       {
         "id": "agent_1",
-        "x": 41,
+        "x": 42,
         "y": 56,
         "heading": 2
       },
@@ -2129,16 +2129,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2147,10 +2147,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2158,7 +2158,7 @@
         "id": "agent_1",
         "x": 42,
         "y": 57,
-        "heading": 1
+        "heading": 2
       },
       {
         "id": "agent_3",
@@ -2167,16 +2167,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2185,10 +2185,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2205,16 +2205,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2223,10 +2223,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2243,16 +2243,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2261,10 +2261,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2281,16 +2281,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2299,10 +2299,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2319,16 +2319,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2337,10 +2337,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2357,16 +2357,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2375,10 +2375,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2395,16 +2395,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2413,10 +2413,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2433,16 +2433,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2451,10 +2451,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2471,16 +2471,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2489,10 +2489,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ],
     [
@@ -2509,16 +2509,16 @@
         "heading": 0
       },
       {
-        "id": "agent_2",
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      {
         "id": "agent_4",
         "x": 15,
         "y": 48,
         "heading": 1
+      },
+      {
+        "id": "agent_6",
+        "x": 17,
+        "y": 43,
+        "heading": 2
       },
       {
         "id": "agent_5",
@@ -2527,10 +2527,10 @@
         "heading": 0
       },
       {
-        "id": "agent_6",
-        "x": 17,
-        "y": 43,
-        "heading": 2
+        "id": "agent_2",
+        "x": 15,
+        "y": 54,
+        "heading": 4
       }
     ]
   ],
@@ -2867,19 +2867,19 @@
           "t": 52
         },
         {
-          "x": 41,
+          "x": 42,
           "y": 54,
-          "heading": 2,
+          "heading": 1,
           "t": 53
         },
         {
-          "x": 41,
+          "x": 42,
           "y": 55,
           "heading": 2,
           "t": 54
         },
         {
-          "x": 41,
+          "x": 42,
           "y": 56,
           "heading": 2,
           "t": 55
@@ -2887,7 +2887,7 @@
         {
           "x": 42,
           "y": 57,
-          "heading": 1,
+          "heading": 2,
           "t": 56
         },
         {
@@ -3234,340 +3234,6 @@
       "done_tick": 44
     },
     {
-      "id": "agent_2",
-      "start": {
-        "x": 53,
-        "y": 3,
-        "heading": 2
-      },
-      "goal": {
-        "x": 15,
-        "y": 54,
-        "heading": 4
-      },
-      "timeline": [
-        {
-          "x": 53,
-          "y": 3,
-          "heading": 2,
-          "t": 0
-        },
-        {
-          "x": 53,
-          "y": 4,
-          "heading": 2,
-          "t": 1
-        },
-        {
-          "x": 52,
-          "y": 5,
-          "heading": 3,
-          "t": 2
-        },
-        {
-          "x": 51,
-          "y": 6,
-          "heading": 3,
-          "t": 3
-        },
-        {
-          "x": 51,
-          "y": 7,
-          "heading": 2,
-          "t": 4
-        },
-        {
-          "x": 51,
-          "y": 8,
-          "heading": 2,
-          "t": 5
-        },
-        {
-          "x": 50,
-          "y": 9,
-          "heading": 3,
-          "t": 6
-        },
-        {
-          "x": 49,
-          "y": 10,
-          "heading": 3,
-          "t": 7
-        },
-        {
-          "x": 48,
-          "y": 11,
-          "heading": 3,
-          "t": 8
-        },
-        {
-          "x": 47,
-          "y": 12,
-          "heading": 3,
-          "t": 9
-        },
-        {
-          "x": 46,
-          "y": 13,
-          "heading": 3,
-          "t": 10
-        },
-        {
-          "x": 45,
-          "y": 14,
-          "heading": 3,
-          "t": 11
-        },
-        {
-          "x": 44,
-          "y": 15,
-          "heading": 3,
-          "t": 12
-        },
-        {
-          "x": 43,
-          "y": 16,
-          "heading": 3,
-          "t": 13
-        },
-        {
-          "x": 42,
-          "y": 17,
-          "heading": 3,
-          "t": 14
-        },
-        {
-          "x": 41,
-          "y": 18,
-          "heading": 3,
-          "t": 15
-        },
-        {
-          "x": 40,
-          "y": 19,
-          "heading": 3,
-          "t": 16
-        },
-        {
-          "x": 39,
-          "y": 20,
-          "heading": 3,
-          "t": 17
-        },
-        {
-          "x": 38,
-          "y": 21,
-          "heading": 3,
-          "t": 18
-        },
-        {
-          "x": 37,
-          "y": 22,
-          "heading": 3,
-          "t": 19
-        },
-        {
-          "x": 36,
-          "y": 23,
-          "heading": 3,
-          "t": 20
-        },
-        {
-          "x": 35,
-          "y": 24,
-          "heading": 3,
-          "t": 21
-        },
-        {
-          "x": 34,
-          "y": 25,
-          "heading": 3,
-          "t": 22
-        },
-        {
-          "x": 33,
-          "y": 26,
-          "heading": 3,
-          "t": 23
-        },
-        {
-          "x": 32,
-          "y": 27,
-          "heading": 3,
-          "t": 24
-        },
-        {
-          "x": 31,
-          "y": 28,
-          "heading": 3,
-          "t": 25
-        },
-        {
-          "x": 30,
-          "y": 29,
-          "heading": 3,
-          "t": 26
-        },
-        {
-          "x": 29,
-          "y": 30,
-          "heading": 3,
-          "t": 27
-        },
-        {
-          "x": 28,
-          "y": 31,
-          "heading": 3,
-          "t": 28
-        },
-        {
-          "x": 28,
-          "y": 32,
-          "heading": 2,
-          "t": 29
-        },
-        {
-          "x": 28,
-          "y": 33,
-          "heading": 2,
-          "t": 30
-        },
-        {
-          "x": 28,
-          "y": 34,
-          "heading": 2,
-          "t": 31
-        },
-        {
-          "x": 28,
-          "y": 35,
-          "heading": 2,
-          "t": 32
-        },
-        {
-          "x": 28,
-          "y": 36,
-          "heading": 2,
-          "t": 33
-        },
-        {
-          "x": 28,
-          "y": 37,
-          "heading": 2,
-          "t": 34
-        },
-        {
-          "x": 27,
-          "y": 38,
-          "heading": 3,
-          "t": 35
-        },
-        {
-          "x": 26,
-          "y": 39,
-          "heading": 3,
-          "t": 36
-        },
-        {
-          "x": 25,
-          "y": 40,
-          "heading": 3,
-          "t": 37
-        },
-        {
-          "x": 24,
-          "y": 41,
-          "heading": 3,
-          "t": 38
-        },
-        {
-          "x": 23,
-          "y": 42,
-          "heading": 3,
-          "t": 39
-        },
-        {
-          "x": 22,
-          "y": 43,
-          "heading": 3,
-          "t": 40
-        },
-        {
-          "x": 21,
-          "y": 44,
-          "heading": 3,
-          "t": 41
-        },
-        {
-          "x": 20,
-          "y": 45,
-          "heading": 3,
-          "t": 42
-        },
-        {
-          "x": 19,
-          "y": 46,
-          "heading": 3,
-          "t": 43
-        },
-        {
-          "x": 18,
-          "y": 47,
-          "heading": 3,
-          "t": 44
-        },
-        {
-          "x": 18,
-          "y": 48,
-          "heading": 2,
-          "t": 45
-        },
-        {
-          "x": 18,
-          "y": 49,
-          "heading": 2,
-          "t": 46
-        },
-        {
-          "x": 18,
-          "y": 50,
-          "heading": 2,
-          "t": 47
-        },
-        {
-          "x": 18,
-          "y": 51,
-          "heading": 2,
-          "t": 48
-        },
-        {
-          "x": 18,
-          "y": 52,
-          "heading": 2,
-          "t": 49
-        },
-        {
-          "x": 17,
-          "y": 53,
-          "heading": 3,
-          "t": 50
-        },
-        {
-          "x": 16,
-          "y": 54,
-          "heading": 3,
-          "t": 51
-        },
-        {
-          "x": 15,
-          "y": 54,
-          "heading": 4,
-          "t": 52
-        }
-      ],
-      "done_tick": 52
-    },
-    {
       "id": "agent_4",
       "start": {
         "x": 50,
@@ -3822,6 +3488,244 @@
         }
       ],
       "done_tick": 39
+    },
+    {
+      "id": "agent_6",
+      "start": {
+        "x": 46,
+        "y": 7,
+        "heading": 3
+      },
+      "goal": {
+        "x": 17,
+        "y": 43,
+        "heading": 3
+      },
+      "timeline": [
+        {
+          "x": 46,
+          "y": 7,
+          "heading": 3,
+          "t": 0
+        },
+        {
+          "x": 45,
+          "y": 8,
+          "heading": 3,
+          "t": 1
+        },
+        {
+          "x": 44,
+          "y": 9,
+          "heading": 3,
+          "t": 2
+        },
+        {
+          "x": 43,
+          "y": 10,
+          "heading": 3,
+          "t": 3
+        },
+        {
+          "x": 42,
+          "y": 11,
+          "heading": 3,
+          "t": 4
+        },
+        {
+          "x": 41,
+          "y": 12,
+          "heading": 3,
+          "t": 5
+        },
+        {
+          "x": 40,
+          "y": 13,
+          "heading": 3,
+          "t": 6
+        },
+        {
+          "x": 39,
+          "y": 14,
+          "heading": 3,
+          "t": 7
+        },
+        {
+          "x": 38,
+          "y": 15,
+          "heading": 3,
+          "t": 8
+        },
+        {
+          "x": 37,
+          "y": 16,
+          "heading": 3,
+          "t": 9
+        },
+        {
+          "x": 36,
+          "y": 17,
+          "heading": 3,
+          "t": 10
+        },
+        {
+          "x": 35,
+          "y": 18,
+          "heading": 3,
+          "t": 11
+        },
+        {
+          "x": 34,
+          "y": 19,
+          "heading": 3,
+          "t": 12
+        },
+        {
+          "x": 33,
+          "y": 20,
+          "heading": 3,
+          "t": 13
+        },
+        {
+          "x": 32,
+          "y": 21,
+          "heading": 3,
+          "t": 14
+        },
+        {
+          "x": 32,
+          "y": 22,
+          "heading": 2,
+          "t": 15
+        },
+        {
+          "x": 32,
+          "y": 23,
+          "heading": 2,
+          "t": 16
+        },
+        {
+          "x": 31,
+          "y": 24,
+          "heading": 3,
+          "t": 17
+        },
+        {
+          "x": 30,
+          "y": 25,
+          "heading": 3,
+          "t": 18
+        },
+        {
+          "x": 29,
+          "y": 26,
+          "heading": 3,
+          "t": 19
+        },
+        {
+          "x": 28,
+          "y": 27,
+          "heading": 3,
+          "t": 20
+        },
+        {
+          "x": 27,
+          "y": 28,
+          "heading": 3,
+          "t": 21
+        },
+        {
+          "x": 26,
+          "y": 29,
+          "heading": 3,
+          "t": 22
+        },
+        {
+          "x": 25,
+          "y": 30,
+          "heading": 3,
+          "t": 23
+        },
+        {
+          "x": 24,
+          "y": 31,
+          "heading": 3,
+          "t": 24
+        },
+        {
+          "x": 23,
+          "y": 32,
+          "heading": 3,
+          "t": 25
+        },
+        {
+          "x": 22,
+          "y": 33,
+          "heading": 3,
+          "t": 26
+        },
+        {
+          "x": 21,
+          "y": 34,
+          "heading": 3,
+          "t": 27
+        },
+        {
+          "x": 20,
+          "y": 35,
+          "heading": 3,
+          "t": 28
+        },
+        {
+          "x": 19,
+          "y": 36,
+          "heading": 3,
+          "t": 29
+        },
+        {
+          "x": 18,
+          "y": 37,
+          "heading": 3,
+          "t": 30
+        },
+        {
+          "x": 17,
+          "y": 38,
+          "heading": 3,
+          "t": 31
+        },
+        {
+          "x": 17,
+          "y": 39,
+          "heading": 2,
+          "t": 32
+        },
+        {
+          "x": 17,
+          "y": 40,
+          "heading": 2,
+          "t": 33
+        },
+        {
+          "x": 17,
+          "y": 41,
+          "heading": 2,
+          "t": 34
+        },
+        {
+          "x": 17,
+          "y": 42,
+          "heading": 2,
+          "t": 35
+        },
+        {
+          "x": 17,
+          "y": 43,
+          "heading": 2,
+          "t": 36
+        }
+      ],
+      "done_tick": 36
     },
     {
       "id": "agent_5",
@@ -4170,242 +4074,338 @@
       "done_tick": 54
     },
     {
-      "id": "agent_6",
+      "id": "agent_2",
       "start": {
-        "x": 46,
-        "y": 7,
-        "heading": 3
+        "x": 53,
+        "y": 3,
+        "heading": 2
       },
       "goal": {
-        "x": 17,
-        "y": 43,
-        "heading": 3
+        "x": 15,
+        "y": 54,
+        "heading": 4
       },
       "timeline": [
         {
-          "x": 46,
-          "y": 7,
-          "heading": 3,
+          "x": 53,
+          "y": 3,
+          "heading": 2,
           "t": 0
         },
         {
-          "x": 45,
-          "y": 8,
-          "heading": 3,
+          "x": 53,
+          "y": 4,
+          "heading": 2,
           "t": 1
         },
         {
-          "x": 44,
-          "y": 9,
-          "heading": 3,
+          "x": 53,
+          "y": 5,
+          "heading": 2,
           "t": 2
         },
         {
-          "x": 43,
-          "y": 10,
-          "heading": 3,
+          "x": 53,
+          "y": 6,
+          "heading": 2,
           "t": 3
         },
         {
-          "x": 42,
-          "y": 11,
-          "heading": 3,
+          "x": 53,
+          "y": 7,
+          "heading": 2,
           "t": 4
         },
         {
-          "x": 41,
-          "y": 12,
-          "heading": 3,
+          "x": 53,
+          "y": 8,
+          "heading": 2,
           "t": 5
         },
         {
-          "x": 40,
-          "y": 13,
+          "x": 52,
+          "y": 9,
           "heading": 3,
           "t": 6
         },
         {
-          "x": 39,
-          "y": 14,
+          "x": 51,
+          "y": 10,
           "heading": 3,
           "t": 7
         },
         {
-          "x": 38,
-          "y": 15,
+          "x": 50,
+          "y": 11,
           "heading": 3,
           "t": 8
         },
         {
-          "x": 37,
-          "y": 16,
+          "x": 49,
+          "y": 12,
           "heading": 3,
           "t": 9
         },
         {
-          "x": 36,
-          "y": 17,
+          "x": 48,
+          "y": 13,
           "heading": 3,
           "t": 10
         },
         {
-          "x": 35,
-          "y": 18,
+          "x": 47,
+          "y": 14,
           "heading": 3,
           "t": 11
         },
         {
-          "x": 34,
-          "y": 19,
+          "x": 46,
+          "y": 15,
           "heading": 3,
           "t": 12
         },
         {
-          "x": 33,
-          "y": 20,
+          "x": 45,
+          "y": 16,
           "heading": 3,
           "t": 13
         },
         {
-          "x": 32,
-          "y": 21,
+          "x": 44,
+          "y": 17,
           "heading": 3,
           "t": 14
         },
         {
-          "x": 32,
-          "y": 22,
-          "heading": 2,
+          "x": 43,
+          "y": 18,
+          "heading": 3,
           "t": 15
         },
         {
-          "x": 32,
-          "y": 23,
-          "heading": 2,
+          "x": 42,
+          "y": 19,
+          "heading": 3,
           "t": 16
         },
         {
-          "x": 31,
-          "y": 24,
+          "x": 41,
+          "y": 20,
           "heading": 3,
           "t": 17
         },
         {
-          "x": 30,
-          "y": 25,
+          "x": 40,
+          "y": 21,
           "heading": 3,
           "t": 18
         },
         {
-          "x": 29,
-          "y": 26,
+          "x": 39,
+          "y": 22,
           "heading": 3,
           "t": 19
         },
         {
-          "x": 28,
-          "y": 27,
+          "x": 38,
+          "y": 23,
           "heading": 3,
           "t": 20
         },
         {
-          "x": 27,
-          "y": 28,
+          "x": 37,
+          "y": 24,
           "heading": 3,
           "t": 21
         },
         {
-          "x": 26,
-          "y": 29,
+          "x": 36,
+          "y": 25,
           "heading": 3,
           "t": 22
         },
         {
-          "x": 25,
-          "y": 30,
+          "x": 35,
+          "y": 26,
           "heading": 3,
           "t": 23
         },
         {
-          "x": 24,
-          "y": 31,
+          "x": 34,
+          "y": 27,
           "heading": 3,
           "t": 24
         },
         {
-          "x": 23,
-          "y": 32,
+          "x": 33,
+          "y": 28,
           "heading": 3,
           "t": 25
         },
         {
-          "x": 22,
-          "y": 33,
+          "x": 32,
+          "y": 29,
           "heading": 3,
           "t": 26
         },
         {
-          "x": 21,
-          "y": 34,
+          "x": 31,
+          "y": 30,
           "heading": 3,
           "t": 27
         },
         {
-          "x": 20,
-          "y": 35,
+          "x": 30,
+          "y": 31,
           "heading": 3,
           "t": 28
         },
         {
-          "x": 19,
-          "y": 36,
+          "x": 29,
+          "y": 32,
           "heading": 3,
           "t": 29
         },
         {
-          "x": 18,
-          "y": 37,
+          "x": 28,
+          "y": 33,
           "heading": 3,
           "t": 30
         },
         {
-          "x": 17,
-          "y": 38,
+          "x": 27,
+          "y": 34,
           "heading": 3,
           "t": 31
         },
         {
-          "x": 17,
-          "y": 39,
-          "heading": 2,
+          "x": 26,
+          "y": 35,
+          "heading": 3,
           "t": 32
         },
         {
-          "x": 17,
-          "y": 40,
-          "heading": 2,
+          "x": 25,
+          "y": 36,
+          "heading": 3,
           "t": 33
         },
         {
-          "x": 17,
-          "y": 41,
-          "heading": 2,
+          "x": 24,
+          "y": 37,
+          "heading": 3,
           "t": 34
         },
         {
-          "x": 17,
-          "y": 42,
-          "heading": 2,
+          "x": 23,
+          "y": 38,
+          "heading": 3,
           "t": 35
         },
         {
-          "x": 17,
-          "y": 43,
-          "heading": 2,
+          "x": 22,
+          "y": 39,
+          "heading": 3,
           "t": 36
+        },
+        {
+          "x": 22,
+          "y": 40,
+          "heading": 2,
+          "t": 37
+        },
+        {
+          "x": 22,
+          "y": 41,
+          "heading": 2,
+          "t": 38
+        },
+        {
+          "x": 21,
+          "y": 42,
+          "heading": 3,
+          "t": 39
+        },
+        {
+          "x": 20,
+          "y": 43,
+          "heading": 3,
+          "t": 40
+        },
+        {
+          "x": 19,
+          "y": 44,
+          "heading": 3,
+          "t": 41
+        },
+        {
+          "x": 18,
+          "y": 45,
+          "heading": 3,
+          "t": 42
+        },
+        {
+          "x": 18,
+          "y": 46,
+          "heading": 2,
+          "t": 43
+        },
+        {
+          "x": 18,
+          "y": 47,
+          "heading": 2,
+          "t": 44
+        },
+        {
+          "x": 18,
+          "y": 48,
+          "heading": 2,
+          "t": 45
+        },
+        {
+          "x": 18,
+          "y": 49,
+          "heading": 2,
+          "t": 46
+        },
+        {
+          "x": 18,
+          "y": 50,
+          "heading": 2,
+          "t": 47
+        },
+        {
+          "x": 18,
+          "y": 51,
+          "heading": 2,
+          "t": 48
+        },
+        {
+          "x": 18,
+          "y": 52,
+          "heading": 2,
+          "t": 49
+        },
+        {
+          "x": 17,
+          "y": 53,
+          "heading": 3,
+          "t": 50
+        },
+        {
+          "x": 16,
+          "y": 54,
+          "heading": 3,
+          "t": 51
+        },
+        {
+          "x": 15,
+          "y": 54,
+          "heading": 4,
+          "t": 52
         }
       ],
-      "done_tick": 36
+      "done_tick": 52
     }
   ],
   "scenario": "manhattan_midtown_osm",

@@ -13,6 +13,6 @@
   <circle cx="315" cy="59" r="2" fill="#b91c1c" />
   <text x="28" y="18" fill="#4b5563" font-family="Arial, sans-serif" font-size="16">LattPath demo: manhattan_osm</text>
   <text x="28" y="718" fill="#4b5563" font-family="Arial, sans-serif" font-size="14">
-    expanded=485 path_cost=262.1 runtime_ms=11.20
+    expanded=485 path_cost=262.1 runtime_ms=10.00
   </text>
 </svg>
