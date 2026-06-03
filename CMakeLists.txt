@@ -68,3 +68,8 @@ add_test(
     NAME lattpath_multi_agent_demos
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/check_multi_agent.py
 )
+
+add_test(
+    NAME lattpath_city_pipeline
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/check_city_pipeline.py
+)
