@@ -1,5 +1,7 @@
 # LattPath
 
+[![CI](https://github.com/agupt0318/LattPath/actions/workflows/ci.yml/badge.svg)](https://github.com/agupt0318/LattPath/actions/workflows/ci.yml)
+
 Portable state-lattice path planning demo with a built-in visualizer, a dense-environment benchmark, and generated walkthrough media.
 
 ![LattPath demo](assets/lattpath_demo.gif)
@@ -22,6 +24,13 @@ Portable state-lattice path planning demo with a built-in visualizer, a dense-en
 
 The original prototype files are still present under `LatticeDstarPathplanning/` as legacy reference material, but the supported entrypoint for the repo is the new planner in `src/`.
 
+Additional technical notes:
+
+- [Design notes](docs/design.md)
+- [Algorithm details](docs/algorithm.md)
+- [Benchmark methodology](docs/benchmarks.md)
+- [Legacy prototype note](LatticeDstarPathplanning/README.md)
+
 ## Quick start
 
 Build the planner:
@@ -29,6 +38,15 @@ Build the planner:
 ```bash
 cmake -S . -B build
 cmake --build build
+```
+
+## Reproducibility
+
+```bash
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build --output-on-failure
+./build/lattpath --benchmark-dense-suite --benchmark-iterations 250 --benchmark-output artifacts/dense_suite_benchmark.json
 ```
 
 List the bundled scenarios:
@@ -88,11 +106,11 @@ The benchmark video above uses the bundled dense suite:
 
 Averaged over `250` runs per scenario from the committed benchmark JSON:
 
-- `LattPath`: `0.96 ms` mean runtime, `118` mean expanded states
-- `A*`: `1.46 ms` mean runtime, `376` mean expanded states
-- `Dijkstra`: `16.42 ms` mean runtime, `5,134` mean expanded states
+- `LattPath`: `0.98 ms` mean runtime, `118` mean expanded states
+- `A*`: `1.48 ms` mean runtime, `376` mean expanded states
+- `Dijkstra`: `16.57 ms` mean runtime, `5,134` mean expanded states
 
-On this dense suite, `LattPath` comes out about `1.5x` faster than `A*` and `17.1x` faster than `Dijkstra`.
+On this dense suite, `LattPath` comes out about `1.5x` faster than `A*` and `16.9x` faster than `Dijkstra`.
 
 This comparison uses the same start and goal pairs and the same heading-aware state space. The difference is that `LattPath` can use longer macro motion primitives like `long_forward` and `cruise_forward`, while the `A*` and `Dijkstra` baselines are limited to stepwise primitives.
 
@@ -247,7 +265,7 @@ To add another city, copy [`configs/cities/manhattan.json`](configs/cities/manha
 
 ## Validation
 
-The planner is covered by the CMake smoke tests:
+The project is covered by CMake/CTest unit and CLI smoke tests:
 
 ```bash
 ctest --test-dir build --output-on-failure
