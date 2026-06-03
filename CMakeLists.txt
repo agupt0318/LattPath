@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(LattPath LANGUAGES CXX)
 
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -60,4 +62,9 @@ add_test(
 add_test(
     NAME lattpath_dense_benchmark
     COMMAND lattpath --benchmark-dense-suite --benchmark-iterations 3 --benchmark-output ${CMAKE_BINARY_DIR}/dense_suite_test.json
+)
+
+add_test(
+    NAME lattpath_multi_agent_demos
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/check_multi_agent.py
 )
