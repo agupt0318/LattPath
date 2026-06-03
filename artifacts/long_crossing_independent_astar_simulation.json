@@ -1,0 +1,1144 @@
+{
+  "mode": "independent_astar",
+  "lattice": {
+    "planner": "spatial_lattice",
+    "state_representation": "(x, y, heading)",
+    "primitive_set": [
+      "forward",
+      "left_arc",
+      "right_arc"
+    ],
+    "wait_primitive_enabled": false,
+    "reservation_model": "none",
+    "expanded_states_total": 14
+  },
+  "ticks": 28,
+  "conflicts": 46,
+  "wait_events": 52,
+  "completed_agents": 0,
+  "history": [
+    [
+      {
+        "id": "alpha",
+        "x": 1,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 7,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 1,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 7,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 6,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 6,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 4,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 4,
+        "y": 5,
+        "heading": 6
+      }
+    ]
+  ],
+  "agents": [
+    {
+      "id": "alpha",
+      "start": {
+        "x": 1,
+        "y": 4,
+        "heading": 0
+      },
+      "goal": {
+        "x": 7,
+        "y": 4,
+        "heading": 0
+      },
+      "timeline": [
+        {
+          "x": 1,
+          "y": 4,
+          "heading": 0
+        },
+        {
+          "x": 2,
+          "y": 4,
+          "heading": 0
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "heading": 0
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "heading": 0
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "heading": 0
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "heading": 0
+        },
+        {
+          "x": 7,
+          "y": 4,
+          "heading": 0
+        }
+      ],
+      "done_tick": 28,
+      "plan": {
+        "state_representation": "(x, y, heading)",
+        "expanded_states": 7,
+        "cost": 6.0,
+        "uses_wait_primitive": false,
+        "path": {
+          "states": [
+            {
+              "x": 1,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 2,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 5,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 7,
+              "y": 4,
+              "heading": 0
+            }
+          ],
+          "cells": [
+            {
+              "x": 1,
+              "y": 4
+            },
+            {
+              "x": 2,
+              "y": 4
+            },
+            {
+              "x": 3,
+              "y": 4
+            },
+            {
+              "x": 4,
+              "y": 4
+            },
+            {
+              "x": 5,
+              "y": 4
+            },
+            {
+              "x": 6,
+              "y": 4
+            },
+            {
+              "x": 7,
+              "y": 4
+            }
+          ],
+          "primitives": [
+            "forward",
+            "forward",
+            "forward",
+            "forward",
+            "forward",
+            "forward"
+          ],
+          "timeline": [
+            {
+              "x": 1,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 2,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 5,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 6,
+              "y": 4,
+              "heading": 0
+            },
+            {
+              "x": 7,
+              "y": 4,
+              "heading": 0
+            }
+          ]
+        },
+        "expanded": [
+          {
+            "x": 1,
+            "y": 4,
+            "heading": 0,
+            "g": 0.0,
+            "f": 0.0
+          },
+          {
+            "x": 2,
+            "y": 4,
+            "heading": 0,
+            "g": 1.0,
+            "f": 6.0
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "heading": 0,
+            "g": 2.0,
+            "f": 6.0
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "heading": 0,
+            "g": 3.0,
+            "f": 6.0
+          },
+          {
+            "x": 5,
+            "y": 4,
+            "heading": 0,
+            "g": 4.0,
+            "f": 6.0
+          },
+          {
+            "x": 6,
+            "y": 4,
+            "heading": 0,
+            "g": 5.0,
+            "f": 6.0
+          },
+          {
+            "x": 7,
+            "y": 4,
+            "heading": 0,
+            "g": 6.0,
+            "f": 6.0
+          }
+        ]
+      },
+      "role": "independent"
+    },
+    {
+      "id": "beta",
+      "start": {
+        "x": 4,
+        "y": 7,
+        "heading": 6
+      },
+      "goal": {
+        "x": 4,
+        "y": 1,
+        "heading": 6
+      },
+      "timeline": [
+        {
+          "x": 4,
+          "y": 7,
+          "heading": 6
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "heading": 6
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "heading": 6
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "heading": 6
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "heading": 6
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "heading": 6
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "heading": 6
+        }
+      ],
+      "done_tick": 28,
+      "plan": {
+        "state_representation": "(x, y, heading)",
+        "expanded_states": 7,
+        "cost": 6.0,
+        "uses_wait_primitive": false,
+        "path": {
+          "states": [
+            {
+              "x": 4,
+              "y": 7,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 6,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 5,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 3,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 2,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 1,
+              "heading": 6
+            }
+          ],
+          "cells": [
+            {
+              "x": 4,
+              "y": 7
+            },
+            {
+              "x": 4,
+              "y": 6
+            },
+            {
+              "x": 4,
+              "y": 5
+            },
+            {
+              "x": 4,
+              "y": 4
+            },
+            {
+              "x": 4,
+              "y": 3
+            },
+            {
+              "x": 4,
+              "y": 2
+            },
+            {
+              "x": 4,
+              "y": 1
+            }
+          ],
+          "primitives": [
+            "forward",
+            "forward",
+            "forward",
+            "forward",
+            "forward",
+            "forward"
+          ],
+          "timeline": [
+            {
+              "x": 4,
+              "y": 7,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 6,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 5,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 4,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 3,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 2,
+              "heading": 6
+            },
+            {
+              "x": 4,
+              "y": 1,
+              "heading": 6
+            }
+          ]
+        },
+        "expanded": [
+          {
+            "x": 4,
+            "y": 7,
+            "heading": 6,
+            "g": 0.0,
+            "f": 0.0
+          },
+          {
+            "x": 4,
+            "y": 6,
+            "heading": 6,
+            "g": 1.0,
+            "f": 6.0
+          },
+          {
+            "x": 4,
+            "y": 5,
+            "heading": 6,
+            "g": 2.0,
+            "f": 6.0
+          },
+          {
+            "x": 4,
+            "y": 4,
+            "heading": 6,
+            "g": 3.0,
+            "f": 6.0
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "heading": 6,
+            "g": 4.0,
+            "f": 6.0
+          },
+          {
+            "x": 4,
+            "y": 2,
+            "heading": 6,
+            "g": 5.0,
+            "f": 6.0
+          },
+          {
+            "x": 4,
+            "y": 1,
+            "heading": 6,
+            "g": 6.0,
+            "f": 6.0
+          }
+        ]
+      },
+      "role": "independent"
+    }
+  ],
+  "scenario": "long_crossing",
+  "grid": {
+    "name": "long_crossing",
+    "width": 9,
+    "height": 9,
+    "start": {
+      "x": 1,
+      "y": 4,
+      "heading": 0
+    },
+    "goal": {
+      "x": 7,
+      "y": 4,
+      "heading": 0
+    },
+    "obstacles": [
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 1,
+        "y": 0
+      },
+      {
+        "x": 2,
+        "y": 0
+      },
+      {
+        "x": 3,
+        "y": 0
+      },
+      {
+        "x": 5,
+        "y": 0
+      },
+      {
+        "x": 6,
+        "y": 0
+      },
+      {
+        "x": 7,
+        "y": 0
+      },
+      {
+        "x": 8,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 1
+      },
+      {
+        "x": 1,
+        "y": 1
+      },
+      {
+        "x": 2,
+        "y": 1
+      },
+      {
+        "x": 3,
+        "y": 1
+      },
+      {
+        "x": 5,
+        "y": 1
+      },
+      {
+        "x": 6,
+        "y": 1
+      },
+      {
+        "x": 7,
+        "y": 1
+      },
+      {
+        "x": 8,
+        "y": 1
+      },
+      {
+        "x": 0,
+        "y": 2
+      },
+      {
+        "x": 1,
+        "y": 2
+      },
+      {
+        "x": 2,
+        "y": 2
+      },
+      {
+        "x": 3,
+        "y": 2
+      },
+      {
+        "x": 5,
+        "y": 2
+      },
+      {
+        "x": 6,
+        "y": 2
+      },
+      {
+        "x": 7,
+        "y": 2
+      },
+      {
+        "x": 8,
+        "y": 2
+      },
+      {
+        "x": 0,
+        "y": 3
+      },
+      {
+        "x": 1,
+        "y": 3
+      },
+      {
+        "x": 2,
+        "y": 3
+      },
+      {
+        "x": 3,
+        "y": 3
+      },
+      {
+        "x": 5,
+        "y": 3
+      },
+      {
+        "x": 6,
+        "y": 3
+      },
+      {
+        "x": 7,
+        "y": 3
+      },
+      {
+        "x": 8,
+        "y": 3
+      },
+      {
+        "x": 0,
+        "y": 5
+      },
+      {
+        "x": 1,
+        "y": 5
+      },
+      {
+        "x": 2,
+        "y": 5
+      },
+      {
+        "x": 3,
+        "y": 5
+      },
+      {
+        "x": 5,
+        "y": 5
+      },
+      {
+        "x": 6,
+        "y": 5
+      },
+      {
+        "x": 7,
+        "y": 5
+      },
+      {
+        "x": 8,
+        "y": 5
+      },
+      {
+        "x": 0,
+        "y": 6
+      },
+      {
+        "x": 1,
+        "y": 6
+      },
+      {
+        "x": 2,
+        "y": 6
+      },
+      {
+        "x": 3,
+        "y": 6
+      },
+      {
+        "x": 5,
+        "y": 6
+      },
+      {
+        "x": 6,
+        "y": 6
+      },
+      {
+        "x": 7,
+        "y": 6
+      },
+      {
+        "x": 8,
+        "y": 6
+      },
+      {
+        "x": 0,
+        "y": 7
+      },
+      {
+        "x": 1,
+        "y": 7
+      },
+      {
+        "x": 2,
+        "y": 7
+      },
+      {
+        "x": 3,
+        "y": 7
+      },
+      {
+        "x": 5,
+        "y": 7
+      },
+      {
+        "x": 6,
+        "y": 7
+      },
+      {
+        "x": 7,
+        "y": 7
+      },
+      {
+        "x": 8,
+        "y": 7
+      },
+      {
+        "x": 0,
+        "y": 8
+      },
+      {
+        "x": 1,
+        "y": 8
+      },
+      {
+        "x": 2,
+        "y": 8
+      },
+      {
+        "x": 3,
+        "y": 8
+      },
+      {
+        "x": 5,
+        "y": 8
+      },
+      {
+        "x": 6,
+        "y": 8
+      },
+      {
+        "x": 7,
+        "y": 8
+      },
+      {
+        "x": 8,
+        "y": 8
+      }
+    ],
+    "controls": {
+      "tick_seconds": 1.0,
+      "traffic_lights": [],
+      "stop_signs": [],
+      "intersection_count": 0,
+      "vehicle_model": {},
+      "sensor_model": {},
+      "human_driver_model": {}
+    }
+  }
+}

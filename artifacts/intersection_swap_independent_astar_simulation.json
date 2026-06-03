@@ -1,0 +1,812 @@
+{
+  "mode": "independent_astar",
+  "lattice": {
+    "planner": "spatial_lattice",
+    "state_representation": "(x, y, heading)",
+    "primitive_set": [
+      "forward",
+      "left_arc",
+      "right_arc"
+    ],
+    "wait_primitive_enabled": false,
+    "reservation_model": "none",
+    "expanded_states_total": 10
+  },
+  "ticks": 20,
+  "conflicts": 34,
+  "wait_events": 38,
+  "completed_agents": 0,
+  "history": [
+    [
+      {
+        "id": "alpha",
+        "x": 1,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 1,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 1,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 1,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ]
+  ],
+  "agents": [
+    {
+      "id": "alpha",
+      "start": {
+        "x": 1,
+        "y": 3,
+        "heading": 0
+      },
+      "goal": {
+        "x": 5,
+        "y": 3,
+        "heading": 0
+      },
+      "timeline": [
+        {
+          "x": 1,
+          "y": 3,
+          "heading": 0
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "heading": 0
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "heading": 0
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "heading": 0
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "heading": 0
+        }
+      ],
+      "done_tick": 20,
+      "plan": {
+        "state_representation": "(x, y, heading)",
+        "expanded_states": 5,
+        "cost": 4.0,
+        "uses_wait_primitive": false,
+        "path": {
+          "states": [
+            {
+              "x": 1,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 2,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 4,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 5,
+              "y": 3,
+              "heading": 0
+            }
+          ],
+          "cells": [
+            {
+              "x": 1,
+              "y": 3
+            },
+            {
+              "x": 2,
+              "y": 3
+            },
+            {
+              "x": 3,
+              "y": 3
+            },
+            {
+              "x": 4,
+              "y": 3
+            },
+            {
+              "x": 5,
+              "y": 3
+            }
+          ],
+          "primitives": [
+            "forward",
+            "forward",
+            "forward",
+            "forward"
+          ],
+          "timeline": [
+            {
+              "x": 1,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 2,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 4,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 5,
+              "y": 3,
+              "heading": 0
+            }
+          ]
+        },
+        "expanded": [
+          {
+            "x": 1,
+            "y": 3,
+            "heading": 0,
+            "g": 0.0,
+            "f": 0.0
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "heading": 0,
+            "g": 1.0,
+            "f": 4.0
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 0,
+            "g": 2.0,
+            "f": 4.0
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "heading": 0,
+            "g": 3.0,
+            "f": 4.0
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "heading": 0,
+            "g": 4.0,
+            "f": 4.0
+          }
+        ]
+      },
+      "role": "independent"
+    },
+    {
+      "id": "beta",
+      "start": {
+        "x": 3,
+        "y": 1,
+        "heading": 2
+      },
+      "goal": {
+        "x": 3,
+        "y": 5,
+        "heading": 2
+      },
+      "timeline": [
+        {
+          "x": 3,
+          "y": 1,
+          "heading": 2
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "heading": 2
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "heading": 2
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "heading": 2
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "heading": 2
+        }
+      ],
+      "done_tick": 20,
+      "plan": {
+        "state_representation": "(x, y, heading)",
+        "expanded_states": 5,
+        "cost": 4.0,
+        "uses_wait_primitive": false,
+        "path": {
+          "states": [
+            {
+              "x": 3,
+              "y": 1,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 2,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 5,
+              "heading": 2
+            }
+          ],
+          "cells": [
+            {
+              "x": 3,
+              "y": 1
+            },
+            {
+              "x": 3,
+              "y": 2
+            },
+            {
+              "x": 3,
+              "y": 3
+            },
+            {
+              "x": 3,
+              "y": 4
+            },
+            {
+              "x": 3,
+              "y": 5
+            }
+          ],
+          "primitives": [
+            "forward",
+            "forward",
+            "forward",
+            "forward"
+          ],
+          "timeline": [
+            {
+              "x": 3,
+              "y": 1,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 2,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 5,
+              "heading": 2
+            }
+          ]
+        },
+        "expanded": [
+          {
+            "x": 3,
+            "y": 1,
+            "heading": 2,
+            "g": 0.0,
+            "f": 0.0
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "heading": 2,
+            "g": 1.0,
+            "f": 4.0
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 2,
+            "g": 2.0,
+            "f": 4.0
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "heading": 2,
+            "g": 3.0,
+            "f": 4.0
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "heading": 2,
+            "g": 4.0,
+            "f": 4.0
+          }
+        ]
+      },
+      "role": "independent"
+    }
+  ],
+  "scenario": "intersection_swap",
+  "grid": {
+    "name": "intersection_swap",
+    "width": 7,
+    "height": 7,
+    "start": {
+      "x": 1,
+      "y": 3,
+      "heading": 0
+    },
+    "goal": {
+      "x": 5,
+      "y": 3,
+      "heading": 0
+    },
+    "obstacles": [
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 1,
+        "y": 0
+      },
+      {
+        "x": 2,
+        "y": 0
+      },
+      {
+        "x": 4,
+        "y": 0
+      },
+      {
+        "x": 5,
+        "y": 0
+      },
+      {
+        "x": 6,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 1
+      },
+      {
+        "x": 1,
+        "y": 1
+      },
+      {
+        "x": 2,
+        "y": 1
+      },
+      {
+        "x": 4,
+        "y": 1
+      },
+      {
+        "x": 5,
+        "y": 1
+      },
+      {
+        "x": 6,
+        "y": 1
+      },
+      {
+        "x": 0,
+        "y": 2
+      },
+      {
+        "x": 1,
+        "y": 2
+      },
+      {
+        "x": 2,
+        "y": 2
+      },
+      {
+        "x": 4,
+        "y": 2
+      },
+      {
+        "x": 5,
+        "y": 2
+      },
+      {
+        "x": 6,
+        "y": 2
+      },
+      {
+        "x": 0,
+        "y": 4
+      },
+      {
+        "x": 1,
+        "y": 4
+      },
+      {
+        "x": 2,
+        "y": 4
+      },
+      {
+        "x": 4,
+        "y": 4
+      },
+      {
+        "x": 5,
+        "y": 4
+      },
+      {
+        "x": 6,
+        "y": 4
+      },
+      {
+        "x": 0,
+        "y": 5
+      },
+      {
+        "x": 1,
+        "y": 5
+      },
+      {
+        "x": 2,
+        "y": 5
+      },
+      {
+        "x": 4,
+        "y": 5
+      },
+      {
+        "x": 5,
+        "y": 5
+      },
+      {
+        "x": 6,
+        "y": 5
+      },
+      {
+        "x": 0,
+        "y": 6
+      },
+      {
+        "x": 1,
+        "y": 6
+      },
+      {
+        "x": 2,
+        "y": 6
+      },
+      {
+        "x": 4,
+        "y": 6
+      },
+      {
+        "x": 5,
+        "y": 6
+      },
+      {
+        "x": 6,
+        "y": 6
+      }
+    ],
+    "controls": {
+      "tick_seconds": 1.0,
+      "traffic_lights": [],
+      "stop_signs": [],
+      "intersection_count": 0,
+      "vehicle_model": {},
+      "sensor_model": {},
+      "human_driver_model": {}
+    }
+  }
+}

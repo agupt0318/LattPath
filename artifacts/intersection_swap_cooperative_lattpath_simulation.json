@@ -1,0 +1,795 @@
+{
+  "mode": "cooperative_lattpath",
+  "lattice": {
+    "planner": "temporal_lattice",
+    "state_representation": "(x, y, heading, t)",
+    "primitive_set": [
+      "forward",
+      "long_forward",
+      "cruise_forward",
+      "left_arc",
+      "right_arc",
+      "wait"
+    ],
+    "wait_primitive_enabled": true,
+    "reservation_model": "cell_and_edge",
+    "planning_horizon": 100,
+    "expanded_states_total": 29,
+    "agents_with_wait": 1,
+    "reservations": {
+      "reserved_ticks": 101,
+      "reserved_cell_entries": 202,
+      "reserved_edge_entries": 8
+    }
+  },
+  "ticks": 5,
+  "conflicts": 0,
+  "wait_events": 1,
+  "completed_agents": 2,
+  "formation_pairs": [],
+  "history": [
+    [
+      {
+        "id": "alpha",
+        "x": 1,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 1,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 2,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 1,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 3,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 2,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 4,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 3,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 5,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 4,
+        "heading": 2
+      }
+    ],
+    [
+      {
+        "id": "alpha",
+        "x": 5,
+        "y": 3,
+        "heading": 0
+      },
+      {
+        "id": "beta",
+        "x": 3,
+        "y": 5,
+        "heading": 2
+      }
+    ]
+  ],
+  "agents": [
+    {
+      "id": "alpha",
+      "start": {
+        "x": 1,
+        "y": 3,
+        "heading": 0
+      },
+      "goal": {
+        "x": 5,
+        "y": 3,
+        "heading": 0
+      },
+      "timeline": [
+        {
+          "x": 1,
+          "y": 3,
+          "heading": 0,
+          "t": 0
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "heading": 0,
+          "t": 1
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "heading": 0,
+          "t": 2
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "heading": 0,
+          "t": 3
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "heading": 0,
+          "t": 4
+        }
+      ],
+      "done_tick": 4,
+      "plan": {
+        "state_representation": "(x, y, heading, t)",
+        "expanded_states": 13,
+        "cost": 8.0,
+        "uses_wait_primitive": false,
+        "path": {
+          "states": [
+            {
+              "x": 1,
+              "y": 3,
+              "heading": 0
+            },
+            {
+              "x": 5,
+              "y": 3,
+              "heading": 0
+            }
+          ],
+          "cells": [
+            {
+              "x": 1,
+              "y": 3
+            },
+            {
+              "x": 2,
+              "y": 3
+            },
+            {
+              "x": 3,
+              "y": 3
+            },
+            {
+              "x": 4,
+              "y": 3
+            },
+            {
+              "x": 5,
+              "y": 3
+            }
+          ],
+          "primitives": [
+            "cruise_forward"
+          ],
+          "timeline": [
+            {
+              "x": 1,
+              "y": 3,
+              "heading": 0,
+              "t": 0
+            },
+            {
+              "x": 2,
+              "y": 3,
+              "heading": 0,
+              "t": 1
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "heading": 0,
+              "t": 2
+            },
+            {
+              "x": 4,
+              "y": 3,
+              "heading": 0,
+              "t": 3
+            },
+            {
+              "x": 5,
+              "y": 3,
+              "heading": 0,
+              "t": 4
+            }
+          ]
+        },
+        "expanded": [
+          {
+            "x": 1,
+            "y": 3,
+            "heading": 0,
+            "g": 0.0,
+            "f": 0.0,
+            "t": 0
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "heading": 0,
+            "g": 1.0,
+            "f": 5.0,
+            "t": 1
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "heading": 0,
+            "g": 2.0,
+            "f": 6.0,
+            "t": 2
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "heading": 0,
+            "g": 3.0,
+            "f": 6.0,
+            "t": 2
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 0,
+            "g": 4.0,
+            "f": 6.0,
+            "t": 2
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "heading": 0,
+            "g": 3.0,
+            "f": 7.0,
+            "t": 3
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "heading": 0,
+            "g": 4.0,
+            "f": 7.0,
+            "t": 3
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 0,
+            "g": 5.0,
+            "f": 7.0,
+            "t": 3
+          },
+          {
+            "x": 1,
+            "y": 3,
+            "heading": 0,
+            "g": 4.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 2,
+            "y": 3,
+            "heading": 0,
+            "g": 5.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 0,
+            "g": 6.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 4,
+            "y": 3,
+            "heading": 0,
+            "g": 7.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 5,
+            "y": 3,
+            "heading": 0,
+            "g": 8.0,
+            "f": 8.0,
+            "t": 4
+          }
+        ]
+      },
+      "role": "solo"
+    },
+    {
+      "id": "beta",
+      "start": {
+        "x": 3,
+        "y": 1,
+        "heading": 2
+      },
+      "goal": {
+        "x": 3,
+        "y": 5,
+        "heading": 2
+      },
+      "timeline": [
+        {
+          "x": 3,
+          "y": 1,
+          "heading": 2,
+          "t": 0
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "heading": 2,
+          "t": 1
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "heading": 2,
+          "t": 2
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "heading": 2,
+          "t": 3
+        },
+        {
+          "x": 3,
+          "y": 4,
+          "heading": 2,
+          "t": 4
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "heading": 2,
+          "t": 5
+        }
+      ],
+      "done_tick": 5,
+      "plan": {
+        "state_representation": "(x, y, heading, t)",
+        "expanded_states": 16,
+        "cost": 9.0,
+        "uses_wait_primitive": true,
+        "path": {
+          "states": [
+            {
+              "x": 3,
+              "y": 1,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 1,
+              "heading": 2
+            },
+            {
+              "x": 3,
+              "y": 5,
+              "heading": 2
+            }
+          ],
+          "cells": [
+            {
+              "x": 3,
+              "y": 1
+            },
+            {
+              "x": 3,
+              "y": 1
+            },
+            {
+              "x": 3,
+              "y": 2
+            },
+            {
+              "x": 3,
+              "y": 3
+            },
+            {
+              "x": 3,
+              "y": 4
+            },
+            {
+              "x": 3,
+              "y": 5
+            }
+          ],
+          "primitives": [
+            "wait",
+            "cruise_forward"
+          ],
+          "timeline": [
+            {
+              "x": 3,
+              "y": 1,
+              "heading": 2,
+              "t": 0
+            },
+            {
+              "x": 3,
+              "y": 1,
+              "heading": 2,
+              "t": 1
+            },
+            {
+              "x": 3,
+              "y": 2,
+              "heading": 2,
+              "t": 2
+            },
+            {
+              "x": 3,
+              "y": 3,
+              "heading": 2,
+              "t": 3
+            },
+            {
+              "x": 3,
+              "y": 4,
+              "heading": 2,
+              "t": 4
+            },
+            {
+              "x": 3,
+              "y": 5,
+              "heading": 2,
+              "t": 5
+            }
+          ]
+        },
+        "expanded": [
+          {
+            "x": 3,
+            "y": 1,
+            "heading": 2,
+            "g": 0.0,
+            "f": 0.0,
+            "t": 0
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "heading": 2,
+            "g": 1.0,
+            "f": 5.0,
+            "t": 1
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "heading": 2,
+            "g": 2.0,
+            "f": 6.0,
+            "t": 2
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "heading": 2,
+            "g": 3.0,
+            "f": 6.0,
+            "t": 2
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "heading": 2,
+            "g": 3.0,
+            "f": 7.0,
+            "t": 3
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "heading": 2,
+            "g": 4.0,
+            "f": 7.0,
+            "t": 3
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 2,
+            "g": 5.0,
+            "f": 7.0,
+            "t": 3
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "heading": 2,
+            "g": 4.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "heading": 2,
+            "g": 5.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 2,
+            "g": 6.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "heading": 2,
+            "g": 7.0,
+            "f": 8.0,
+            "t": 4
+          },
+          {
+            "x": 3,
+            "y": 1,
+            "heading": 2,
+            "g": 5.0,
+            "f": 9.0,
+            "t": 5
+          },
+          {
+            "x": 3,
+            "y": 2,
+            "heading": 2,
+            "g": 6.0,
+            "f": 9.0,
+            "t": 5
+          },
+          {
+            "x": 3,
+            "y": 3,
+            "heading": 2,
+            "g": 7.0,
+            "f": 9.0,
+            "t": 5
+          },
+          {
+            "x": 3,
+            "y": 4,
+            "heading": 2,
+            "g": 8.0,
+            "f": 9.0,
+            "t": 5
+          },
+          {
+            "x": 3,
+            "y": 5,
+            "heading": 2,
+            "g": 9.0,
+            "f": 9.0,
+            "t": 5
+          }
+        ]
+      },
+      "role": "solo"
+    }
+  ],
+  "scenario": "intersection_swap",
+  "grid": {
+    "name": "intersection_swap",
+    "width": 7,
+    "height": 7,
+    "start": {
+      "x": 1,
+      "y": 3,
+      "heading": 0
+    },
+    "goal": {
+      "x": 5,
+      "y": 3,
+      "heading": 0
+    },
+    "obstacles": [
+      {
+        "x": 0,
+        "y": 0
+      },
+      {
+        "x": 1,
+        "y": 0
+      },
+      {
+        "x": 2,
+        "y": 0
+      },
+      {
+        "x": 4,
+        "y": 0
+      },
+      {
+        "x": 5,
+        "y": 0
+      },
+      {
+        "x": 6,
+        "y": 0
+      },
+      {
+        "x": 0,
+        "y": 1
+      },
+      {
+        "x": 1,
+        "y": 1
+      },
+      {
+        "x": 2,
+        "y": 1
+      },
+      {
+        "x": 4,
+        "y": 1
+      },
+      {
+        "x": 5,
+        "y": 1
+      },
+      {
+        "x": 6,
+        "y": 1
+      },
+      {
+        "x": 0,
+        "y": 2
+      },
+      {
+        "x": 1,
+        "y": 2
+      },
+      {
+        "x": 2,
+        "y": 2
+      },
+      {
+        "x": 4,
+        "y": 2
+      },
+      {
+        "x": 5,
+        "y": 2
+      },
+      {
+        "x": 6,
+        "y": 2
+      },
+      {
+        "x": 0,
+        "y": 4
+      },
+      {
+        "x": 1,
+        "y": 4
+      },
+      {
+        "x": 2,
+        "y": 4
+      },
+      {
+        "x": 4,
+        "y": 4
+      },
+      {
+        "x": 5,
+        "y": 4
+      },
+      {
+        "x": 6,
+        "y": 4
+      },
+      {
+        "x": 0,
+        "y": 5
+      },
+      {
+        "x": 1,
+        "y": 5
+      },
+      {
+        "x": 2,
+        "y": 5
+      },
+      {
+        "x": 4,
+        "y": 5
+      },
+      {
+        "x": 5,
+        "y": 5
+      },
+      {
+        "x": 6,
+        "y": 5
+      },
+      {
+        "x": 0,
+        "y": 6
+      },
+      {
+        "x": 1,
+        "y": 6
+      },
+      {
+        "x": 2,
+        "y": 6
+      },
+      {
+        "x": 4,
+        "y": 6
+      },
+      {
+        "x": 5,
+        "y": 6
+      },
+      {
+        "x": 6,
+        "y": 6
+      }
+    ],
+    "controls": {
+      "tick_seconds": 1.0,
+      "traffic_lights": [],
+      "stop_signs": [],
+      "intersection_count": 0,
+      "vehicle_model": {},
+      "sensor_model": {},
+      "human_driver_model": {}
+    }
+  }
+}
