@@ -132,6 +132,8 @@ The repo now ships two Manhattan build modes over the same city config:
 
 Both modes still end in the same lattice-planner input format, but they reach it through different ingestion paths. In the current committed Manhattan artifacts, the cached-XML `custom` path and the `osmnx` path now produce almost the same full-route raster, so the backend comparison is more about reproducible build plumbing than about radically different planner input on this slice.
 
+For the committed `custom` artifacts, the network file now separates the coarse planning raster from a denser display grid. Route search still runs on the planner grid, but the SVG/GIF/MP4 outputs render projected street centerlines from the higher-resolution display layer so the map reads more like a street network and less like a filled occupancy mask.
+
 ### Route demo
 
 ![Manhattan custom route](assets/manhattan_osm_custom_lattpath.gif)
@@ -140,8 +142,8 @@ Both modes still end in the same lattice-planner input format, but they reach it
 
 On the committed full-Manhattan route with the `custom` backend:
 
-- `LattPath`: `79.47 ms`, `9,459` expanded states, `149.95` path cost
-- `A*`: `74.41 ms`, `14,426` expanded states, `172.6` path cost
+- `LattPath`: `56.34 ms`, `5,947` expanded states, `149.2` path cost
+- `A*`: `61.04 ms`, `11,301` expanded states, `170.8` path cost
 
 On this current cached-XML build, `LattPath` still expands fewer states, but the runtime difference is small and noisy rather than a dramatic win.
 
