@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Multi-Agent Lattice Viewer</title>
+  <style>
+    :root {
+      --paper: #f9f6ef;
+      --canvas: #fffdf7;
+      --ink: #14213d;
+      --muted: #6b7280;
+      --panel: #f2ead9;
+      --border: #d9c7a2;
+      --good: #15803d;
+      --warn: #b45309;
+      --bad: #b91c1c;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: radial-gradient(circle at top, #fffefb 0%, var(--paper) 70%);
+    }
+    main {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 28px 18px 44px;
+      display: grid;
+      gap: 18px;
+    }
+    .hero, .controls, .layout { display: grid; gap: 12px; }
+    .hero h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1; }
+    .hero p { margin: 0; color: var(--muted); max-width: 920px; }
+    .controls {
+      grid-template-columns: repeat(auto-fit, minmax(180px, max-content));
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 14px 16px;
+      box-shadow: 0 18px 40px rgba(90, 66, 19, 0.08);
+    }
+    .controls label { color: var(--muted); font-size: 0.95rem; }
+    .controls select,
+    .controls input[type="range"],
+    .controls button,
+    .controls input[type="file"]::file-selector-button {
+      font: inherit;
+    }
+    .controls select,
+    .controls button,
+    .controls input[type="file"]::file-selector-button {
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: var(--ink);
+      color: white;
+    }
+    .controls input[type="range"] { width: 220px; }
+    .controls input[type="file"] { max-width: 240px; }
+    .layout {
+      grid-template-columns: minmax(0, 1fr) 330px;
+      align-items: start;
+    }
+    canvas {
+      width: 100%;
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      background: var(--canvas);
+      box-shadow: 0 24px 50px rgba(95, 75, 34, 0.1);
+    }
+    aside { display: grid; gap: 14px; }
+    .card {
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 18px;
+      display: grid;
+      gap: 10px;
+    }
+    .card h2 { margin: 0; font-size: 1.05rem; }
+    .stat { display: grid; gap: 2px; }
+    .stat span { color: var(--muted); font-size: 0.88rem; }
+    .stat strong { font-size: 1.18rem; }
+    .good { color: var(--good); }
+    .warn { color: var(--warn); }
+    .bad { color: var(--bad); }
+    code {
+      background: rgba(20, 33, 61, 0.06);
+      padding: 2px 6px;
+      border-radius: 999px;
+      font-size: 0.88rem;
+    }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>Multi-Agent Lattice Viewer</h1>
+      <p>
+        Compare a spatial baseline against a reservation-aware temporal lattice on small deterministic scenarios.
+        The cooperative side exposes the richer search object directly: a state lattice over <code>(x, y, heading, t)</code>
+        with explicit <code>wait</code> transitions and cell/edge reservations.
+      </p>
+    </section>
+
+    <section class="controls">
+      <label>Bundled sample
+        <select id="sample">
+          <option value="intersection_swap">intersection_swap</option>
+          <option value="long_crossing">long_crossing</option>
+        </select>
+      </label>
+      <button id="playPause">Pause</button>
+      <label>Progress <input id="progress" type="range" min="0" max="1" step="0.001" value="0" /></label>
+      <label>Speed <input id="speed" type="range" min="0.25" max="3" step="0.25" value="1" /></label>
+      <input id="astarFile" type="file" accept=".json,application/json" />
+      <input id="lattFile" type="file" accept=".json,application/json" />
+      <span id="status">Loading bundled sample...</span>
+    </section>
+
+    <section class="layout">
+      <canvas id="stage" width="1180" height="760"></canvas>
+      <aside>
+        <div class="card">
+          <h2>Scenario</h2>
+          <div class="stat"><span>Name</span><strong id="scenarioName">-</strong></div>
+          <div class="stat"><span>Current tick</span><strong id="currentTick">-</strong></div>
+          <div class="stat"><span>Agents</span><strong id="agentCount">-</strong></div>
+        </div>
+
+        <div class="card">
+          <h2>Spatial Baseline</h2>
+          <div class="stat"><span>State space</span><strong id="astarState">-</strong></div>
+          <div class="stat"><span>Expanded states</span><strong id="astarExpanded">-</strong></div>
+          <div class="stat"><span>Completed</span><strong id="astarCompleted" class="bad">-</strong></div>
+          <div class="stat"><span>Conflicts</span><strong id="astarConflicts" class="bad">-</strong></div>
+        </div>
+
+        <div class="card">
+          <h2>Temporal Lattice</h2>
+          <div class="stat"><span>State space</span><strong id="lattState">-</strong></div>
+          <div class="stat"><span>Expanded states</span><strong id="lattExpanded">-</strong></div>
+          <div class="stat"><span>Wait-enabled</span><strong id="lattWaitPrimitive" class="good">-</strong></div>
+          <div class="stat"><span>Reservation model</span><strong id="lattReservations">-</strong></div>
+        </div>
+
+        <div class="card">
+          <h2>Primitive Sets</h2>
+          <div class="stat"><span>Baseline</span><strong id="astarPrimitives">-</strong></div>
+          <div class="stat"><span>Temporal lattice</span><strong id="lattPrimitives">-</strong></div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("stage");
+    const context = canvas.getContext("2d");
+    const sampleSelect = document.getElementById("sample");
+    const progressInput = document.getElementById("progress");
+    const speedInput = document.getElementById("speed");
+    const playPauseButton = document.getElementById("playPause");
+    const astarFile = document.getElementById("astarFile");
+    const lattFile = document.getElementById("lattFile");
+    const statusLabel = document.getElementById("status");
+
+    const scenarioName = document.getElementById("scenarioName");
+    const currentTickLabel = document.getElementById("currentTick");
+    const agentCountLabel = document.getElementById("agentCount");
+    const astarState = document.getElementById("astarState");
+    const astarExpanded = document.getElementById("astarExpanded");
+    const astarCompleted = document.getElementById("astarCompleted");
+    const astarConflicts = document.getElementById("astarConflicts");
+    const lattState = document.getElementById("lattState");
+    const lattExpanded = document.getElementById("lattExpanded");
+    const lattWaitPrimitive = document.getElementById("lattWaitPrimitive");
+    const lattReservations = document.getElementById("lattReservations");
+    const astarPrimitives = document.getElementById("astarPrimitives");
+    const lattPrimitives = document.getElementById("lattPrimitives");
+
+    const headingVectors = [
+      [1, 0], [1, 1], [0, 1], [-1, 1],
+      [-1, 0], [-1, -1], [0, -1], [1, -1],
+    ];
+
+    const agentColors = [
+      [14, 116, 144],
+      [5, 150, 105],
+      [217, 119, 6],
+      [220, 38, 38],
+      [109, 40, 217],
+      [30, 64, 175],
+    ];
+
+    let simulations = { independent: null, cooperative: null };
+    let playing = true;
+    let progress = 0;
+    let lastTimestamp = 0;
+
+    function rgb(color) {
+      return `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+    }
+
+    function blend(a, b, ratio) {
+      return a.map((value, index) => Math.round(value + ((b[index] - value) * ratio)));
+    }
+
+    function colorForAgent(index) {
+      return agentColors[index % agentColors.length];
+    }
+
+    function ready() {
+      return simulations.independent && simulations.cooperative;
+    }
+
+    function maxTicks() {
+      if (!ready()) {
+        return 1;
+      }
+      return Math.max(simulations.independent.ticks, simulations.cooperative.ticks, 1);
+    }
+
+    function currentTick() {
+      return Math.round(progress * maxTicks());
+    }
+
+    function panelLayout(grid, panelX, panelY, panelWidth, panelHeight) {
+      const cell = Math.max(
+        4,
+        Math.min(
+          Math.floor((panelWidth - 36) / grid.width),
+          Math.floor((panelHeight - 116) / grid.height)
+        )
+      );
+      const gridWidth = grid.width * cell;
+      const gridHeight = grid.height * cell;
+      return {
+        cell,
+        left: panelX + (panelWidth - gridWidth) / 2,
+        top: panelY + 84 + (panelHeight - 108 - gridHeight) / 2,
+        height: grid.height,
+      };
+    }
+
+    function topLeft(layout, x, y) {
+      return {
+        x: layout.left + x * layout.cell,
+        y: layout.top + (layout.height - 1 - y) * layout.cell,
+      };
+    }
+
+    function center(layout, x, y) {
+      const point = topLeft(layout, x, y);
+      return { x: point.x + layout.cell / 2, y: point.y + layout.cell / 2 };
+    }
+
+    function drawGrid(layout, grid) {
+      const gridWidth = grid.width * layout.cell;
+      const gridHeight = grid.height * layout.cell;
+      context.strokeStyle = "#e7dcc4";
+      context.lineWidth = 1;
+      for (let x = 0; x <= grid.width; x += 1) {
+        const px = layout.left + x * layout.cell;
+        context.beginPath();
+        context.moveTo(px, layout.top);
+        context.lineTo(px, layout.top + gridHeight);
+        context.stroke();
+      }
+      for (let y = 0; y <= grid.height; y += 1) {
+        const py = layout.top + y * layout.cell;
+        context.beginPath();
+        context.moveTo(layout.left, py);
+        context.lineTo(layout.left + gridWidth, py);
+        context.stroke();
+      }
+      context.fillStyle = "#1f2937";
+      grid.obstacles.forEach((obstacle) => {
+        const point = topLeft(layout, obstacle.x, obstacle.y);
+        const inset = layout.cell <= 5 ? 1 : 2;
+        context.fillRect(point.x + inset, point.y + inset, layout.cell - inset * 2, layout.cell - inset * 2);
+      });
+    }
+
+    function drawMarkers(layout, agents) {
+      agents.forEach((agent, index) => {
+        const color = colorForAgent(index);
+        const start = center(layout, agent.start.x, agent.start.y);
+        const goal = center(layout, agent.goal.x, agent.goal.y);
+        context.fillStyle = rgb(blend(color, [255, 255, 255], 0.45));
+        context.beginPath();
+        context.arc(start.x, start.y, Math.max(2, layout.cell * 0.18), 0, Math.PI * 2);
+        context.fill();
+        context.strokeStyle = rgb(color);
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(goal.x - 4, goal.y - 4);
+        context.lineTo(goal.x + 4, goal.y + 4);
+        context.moveTo(goal.x - 4, goal.y + 4);
+        context.lineTo(goal.x + 4, goal.y - 4);
+        context.stroke();
+      });
+    }
+
+    function drawTrails(layout, agents, tick) {
+      agents.forEach((agent, index) => {
+        const color = blend(colorForAgent(index), [255, 255, 255], 0.45);
+        const visible = agent.timeline.slice(0, Math.min(agent.timeline.length, tick + 1));
+        if (visible.length < 2) {
+          return;
+        }
+        context.strokeStyle = rgb(color);
+        context.lineWidth = Math.max(2, layout.cell * 0.3);
+        context.lineJoin = "round";
+        context.lineCap = "round";
+        context.beginPath();
+        visible.forEach((entry, stepIndex) => {
+          const point = center(layout, entry.x, entry.y);
+          if (stepIndex === 0) {
+            context.moveTo(point.x, point.y);
+          } else {
+            context.lineTo(point.x, point.y);
+          }
+        });
+        context.stroke();
+      });
+    }
+
+    function drawAgents(layout, simulation, tick) {
+      const frame = simulation.history[Math.min(tick, simulation.history.length - 1)] || [];
+      frame.forEach((entry, index) => {
+        const point = center(layout, entry.x, entry.y);
+        const [dx, dy] = headingVectors[entry.heading];
+        const color = colorForAgent(index);
+        context.fillStyle = rgb(color);
+        context.strokeStyle = rgb(color);
+        context.lineWidth = Math.max(2, layout.cell * 0.16);
+        context.beginPath();
+        context.arc(point.x, point.y, Math.max(2, layout.cell * 0.28), 0, Math.PI * 2);
+        context.fill();
+        context.beginPath();
+        context.moveTo(point.x, point.y);
+        context.lineTo(point.x + dx * layout.cell * 0.58, point.y - dy * layout.cell * 0.58);
+        context.stroke();
+      });
+    }
+
+    function drawPanel(simulation, panelX, panelY, panelWidth, panelHeight) {
+      context.fillStyle = "#fffdf6";
+      context.fillRect(panelX, panelY, panelWidth, panelHeight);
+      context.strokeStyle = "#dccfaf";
+      context.lineWidth = 2;
+      context.strokeRect(panelX, panelY, panelWidth, panelHeight);
+
+      context.fillStyle = "#1f2937";
+      context.font = "700 22px Avenir Next, sans-serif";
+      context.fillText(simulation.mode === "independent_astar" ? "Spatial Baseline" : "Temporal Lattice", panelX + 16, panelY + 30);
+      context.fillStyle = "#6b7280";
+      context.font = "15px Avenir Next, sans-serif";
+      context.fillText(simulation.lattice.state_representation, panelX + 16, panelY + 54);
+      context.fillText(`Expanded ${simulation.lattice.expanded_states_total}`, panelX + 16, panelY + 74);
+      context.fillText(`Conflicts ${simulation.conflicts}  Waits ${simulation.wait_events}`, panelX + 220, panelY + 74);
+
+      const layout = panelLayout(simulation.grid, panelX, panelY, panelWidth, panelHeight);
+      drawGrid(layout, simulation.grid);
+      drawMarkers(layout, simulation.agents);
+      drawTrails(layout, simulation.agents, Math.min(currentTick(), simulation.ticks));
+      drawAgents(layout, simulation, Math.min(currentTick(), simulation.ticks));
+    }
+
+    function updateStats() {
+      if (!ready()) {
+        return;
+      }
+
+      scenarioName.textContent = simulations.cooperative.scenario;
+      currentTickLabel.textContent = String(currentTick());
+      agentCountLabel.textContent = String(simulations.cooperative.agents.length);
+      astarState.textContent = simulations.independent.lattice.state_representation;
+      astarExpanded.textContent = String(simulations.independent.lattice.expanded_states_total);
+      astarCompleted.textContent = `${simulations.independent.completed_agents}/${simulations.independent.agents.length}`;
+      astarConflicts.textContent = String(simulations.independent.conflicts);
+      lattState.textContent = simulations.cooperative.lattice.state_representation;
+      lattExpanded.textContent = String(simulations.cooperative.lattice.expanded_states_total);
+      lattWaitPrimitive.textContent = simulations.cooperative.lattice.wait_primitive_enabled ? "yes" : "no";
+      lattReservations.textContent = simulations.cooperative.lattice.reservation_model;
+      astarPrimitives.textContent = simulations.independent.lattice.primitive_set.join(", ");
+      lattPrimitives.textContent = simulations.cooperative.lattice.primitive_set.join(", ");
+    }
+
+    function drawFrame() {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = "#fcfbf7";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      if (!ready()) {
+        return;
+      }
+
+      context.fillStyle = "#1f2937";
+      context.font = "700 28px Avenir Next, sans-serif";
+      context.fillText("Deterministic Multi-Agent Lattice Demos", 34, 42);
+      context.fillStyle = "#6b7280";
+      context.font = "16px Avenir Next, sans-serif";
+      context.fillText("Same geometry, different planning object: spatial paths versus reservation-aware temporal lattice search.", 34, 66);
+
+      drawPanel(simulations.independent, 34, 104, 536, 616);
+      drawPanel(simulations.cooperative, 610, 104, 536, 616);
+      updateStats();
+    }
+
+    function tick(timestamp) {
+      if (!lastTimestamp) {
+        lastTimestamp = timestamp;
+      }
+      const delta = timestamp - lastTimestamp;
+      lastTimestamp = timestamp;
+      if (playing && ready()) {
+        progress = (progress + (delta / (9000 * maxTicks())) * Number(speedInput.value) * maxTicks()) % 1;
+        progressInput.value = String(progress);
+      }
+      drawFrame();
+      requestAnimationFrame(tick);
+    }
+
+    function setSimulation(which, data) {
+      simulations[which] = data;
+      progress = 0;
+      progressInput.value = "0";
+      if (ready()) {
+        statusLabel.textContent = `Loaded ${simulations.cooperative.scenario}`;
+      }
+      drawFrame();
+    }
+
+    async function loadBundledSample(sampleName) {
+      statusLabel.textContent = `Loading ${sampleName}...`;
+      try {
+        const [independentResponse, cooperativeResponse] = await Promise.all([
+          fetch(`../artifacts/${sampleName}_independent_astar_simulation.json`),
+          fetch(`../artifacts/${sampleName}_cooperative_lattpath_simulation.json`),
+        ]);
+        if (!independentResponse.ok || !cooperativeResponse.ok) {
+          throw new Error("sample not available");
+        }
+        setSimulation("independent", await independentResponse.json());
+        setSimulation("cooperative", await cooperativeResponse.json());
+      } catch (_error) {
+        statusLabel.textContent = "Load two simulation JSON files to inspect a multi-agent comparison.";
+      }
+    }
+
+    async function readSelectedFile(input, which) {
+      const [file] = input.files || [];
+      if (!file) {
+        return;
+      }
+      const text = await file.text();
+      setSimulation(which, JSON.parse(text));
+    }
+
+    sampleSelect.addEventListener("change", () => loadBundledSample(sampleSelect.value));
+    playPauseButton.addEventListener("click", () => {
+      playing = !playing;
+      playPauseButton.textContent = playing ? "Pause" : "Play";
+    });
+    progressInput.addEventListener("input", () => {
+      progress = Number(progressInput.value);
+      drawFrame();
+    });
+    astarFile.addEventListener("change", () => readSelectedFile(astarFile, "independent"));
+    lattFile.addEventListener("change", () => readSelectedFile(lattFile, "cooperative"));
+
+    requestAnimationFrame(tick);
+    loadBundledSample(sampleSelect.value);
+  </script>
+</body>
+</html>
