@@ -20,6 +20,7 @@ Portable state-lattice path planning demo with a built-in visualizer, a dense-en
 - Generic city pipeline entrypoints for building, simulating, and rendering additional cities
 - Browser visualizer at [`visualizer/index.html`](visualizer/index.html)
 - Manhattan coordination viewer at [`visualizer/manhattan.html`](visualizer/manhattan.html)
+- Generic multi-agent lattice viewer at [`visualizer/multi-agent.html`](visualizer/multi-agent.html)
 - SVG, GIF, and MP4 rendering pipeline for README-ready media
 
 The original prototype files are still present under `LatticeDstarPathplanning/` as legacy reference material, but the supported entrypoint for the repo is the new planner in `src/`.
@@ -173,6 +174,28 @@ On the committed Midtown race, both backends now converge to the same higher-fid
 - Cooperative `LattPath`: `6/6` agents finished in `134` ticks with about `300` wait events and `0` conflicts
 
 That is the behavior shown in `visualizer/manhattan.html` and in the backend videos above: once signals, stop holds, and reaction delays exist, the independent cars do eventually make it through, but they spend much more time yielding and hesitating. The communication-aware planner still clears the same street slice in roughly half the ticks while eliminating execution-time conflicts.
+
+## Multi-agent lattice demos
+
+The repo also ships two small deterministic multi-agent demos intended to make the coordination model easier to inspect than the full Manhattan example:
+
+- `intersection_swap`
+- `long_crossing`
+
+These demos use the same grid-based lattice primitives as the single-agent planner, but the cooperative mode now exposes a more explicit temporal lattice over `(x, y, heading, t)` with:
+
+- a `wait` primitive
+- cell and edge reservations
+- per-agent expanded temporal states
+- per-agent primitive traces and timelines
+
+Generate or refresh the demo JSON files with:
+
+```bash
+python3 tools/generate_multi_agent_demos.py
+```
+
+Open `visualizer/multi-agent.html` to inspect the bundled demo artifacts side by side.
 
 ## A* vs LattPath
 
