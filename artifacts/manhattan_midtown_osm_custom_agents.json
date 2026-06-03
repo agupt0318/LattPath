@@ -5,12 +5,12 @@
       "start": {
         "x": 5,
         "y": 3,
-        "heading": 1
+        "heading": 0
       },
       "goal": {
         "x": 51,
         "y": 59,
-        "heading": 2
+        "heading": 0
       }
     },
     {
@@ -18,7 +18,7 @@
       "start": {
         "x": 53,
         "y": 3,
-        "heading": 3
+        "heading": 4
       },
       "goal": {
         "x": 15,
@@ -31,12 +31,12 @@
       "start": {
         "x": 4,
         "y": 16,
-        "heading": 1
+        "heading": 0
       },
       "goal": {
         "x": 42,
         "y": 53,
-        "heading": 1
+        "heading": 0
       }
     },
     {
@@ -49,7 +49,7 @@
       "goal": {
         "x": 15,
         "y": 48,
-        "heading": 2
+        "heading": 3
       }
     },
     {
