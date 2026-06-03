@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from typing import Optional
 
 PALETTE = {
     "background": (252, 251, 247),
@@ -31,10 +32,26 @@ HEADING_VECTORS = (
     (1, -1),
 )
 
+HIGHWAY_STYLES = {
+    "motorway": {"color": (110, 115, 123), "thickness": 3},
+    "motorway_link": {"color": (118, 123, 131), "thickness": 2},
+    "trunk": {"color": (118, 123, 131), "thickness": 3},
+    "trunk_link": {"color": (126, 130, 138), "thickness": 2},
+    "primary": {"color": (132, 136, 144), "thickness": 2},
+    "primary_link": {"color": (140, 144, 152), "thickness": 2},
+    "secondary": {"color": (146, 150, 158), "thickness": 2},
+    "tertiary": {"color": (154, 158, 166), "thickness": 1},
+    "residential": {"color": (168, 172, 180), "thickness": 1},
+    "service": {"color": (182, 186, 194), "thickness": 1},
+    "unclassified": {"color": (168, 172, 180), "thickness": 1},
+    "living_street": {"color": (182, 186, 194), "thickness": 1},
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Render planner output into an SVG, GIF, or MP4.")
     parser.add_argument("plan", type=Path, help="Path to a planner JSON output file.")
+    parser.add_argument("--network", type=Path, help="Optional network JSON used to draw road centerlines for city demos.")
     parser.add_argument("--video-output", type=Path, help="Optional animated output (.gif or .mp4).")
     parser.add_argument("--still-output", type=Path, help="Optional static SVG output.")
     parser.add_argument("--fps", type=int, default=8, help="Frames per second for video output.")
@@ -42,6 +59,29 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_plan(path: Path) -> dict:
+    with path.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def infer_network_path(plan_path: Path, plan: dict) -> Optional[Path]:
+    scenario = plan.get("scenario")
+    if not scenario:
+        return None
+
+    candidates = [plan_path.with_name(f"{scenario}_network.json")]
+    for suffix in ("_lattpath_plan", "_astar_plan", "_dijkstra_plan"):
+        if plan_path.stem.endswith(suffix):
+            candidates.append(plan_path.with_name(f"{plan_path.stem[:-len(suffix)]}_network.json"))
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def load_network(path: Optional[Path]) -> Optional[dict]:
+    if path is None or not path.exists():
+        return None
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
@@ -96,18 +136,28 @@ class Canvas:
             handle.write(self.pixels)
 
 
-def layout(plan: dict) -> dict:
+def render_grid_dimensions(plan: dict, network: Optional[dict]) -> tuple:
+    display_grid = network.get("display_grid") if network else None
+    if isinstance(display_grid, dict):
+        return int(display_grid.get("width", plan["grid"]["width"])), int(display_grid.get("height", plan["grid"]["height"]))
+    return plan["grid"]["width"], plan["grid"]["height"]
+
+
+def layout(plan: dict, network: Optional[dict] = None) -> dict:
     max_canvas_width = 1280
     max_canvas_height = 820
-    width = plan["grid"]["width"]
-    height = plan["grid"]["height"]
-    cell = max(2, min(30, int(min(max_canvas_width / max(width, 1), max_canvas_height / max(height, 1)))))
+    width, height = render_grid_dimensions(plan, network)
+    cell = max(1, min(30, int(min(max_canvas_width / max(width, 1), max_canvas_height / max(height, 1)))))
     margin = 28
     return {
         "cell": cell,
         "margin": margin,
         "width": width,
         "height": height,
+        "plan_width": plan["grid"]["width"],
+        "plan_height": plan["grid"]["height"],
+        "scale_x": (width - 1) / max(plan["grid"]["width"] - 1, 1),
+        "scale_y": (height - 1) / max(plan["grid"]["height"] - 1, 1),
         "image_width": (width * cell) + (margin * 2),
         "image_height": (height * cell) + (margin * 2),
     }
@@ -125,6 +175,20 @@ def grid_center(config: dict, x: int, y: int) -> tuple:
     return px + half, py + half
 
 
+def plan_cell_to_render_cell(config: dict, x: int, y: int) -> tuple:
+    return int(round(x * config["scale_x"])), int(round(y * config["scale_y"]))
+
+
+def plan_grid_top_left(config: dict, x: int, y: int) -> tuple:
+    render_x, render_y = plan_cell_to_render_cell(config, x, y)
+    return grid_top_left(config, render_x, render_y)
+
+
+def plan_grid_center(config: dict, x: int, y: int) -> tuple:
+    render_x, render_y = plan_cell_to_render_cell(config, x, y)
+    return grid_center(config, render_x, render_y)
+
+
 def draw_base(canvas: Canvas, plan: dict, config: dict) -> None:
     left = config["margin"]
     top = config["margin"]
@@ -140,7 +204,7 @@ def draw_base(canvas: Canvas, plan: dict, config: dict) -> None:
 
     inset = 3
     for obstacle in plan["obstacles"]:
-        x0, y0 = grid_top_left(config, obstacle["x"], obstacle["y"])
+        x0, y0 = plan_grid_top_left(config, obstacle["x"], obstacle["y"])
         canvas.fill_rect(
             x0 + inset,
             y0 + inset,
@@ -151,8 +215,45 @@ def draw_base(canvas: Canvas, plan: dict, config: dict) -> None:
 
     start = plan["start"]
     goal = plan["goal"]
-    start_x, start_y = grid_center(config, start["x"], start["y"])
-    goal_x, goal_y = grid_center(config, goal["x"], goal["y"])
+    start_x, start_y = plan_grid_center(config, start["x"], start["y"])
+    goal_x, goal_y = plan_grid_center(config, goal["x"], goal["y"])
+    canvas.draw_circle(start_x, start_y, max(2, config["cell"] // 4), PALETTE["start"])
+    canvas.draw_circle(goal_x, goal_y, max(2, config["cell"] // 4), PALETTE["goal"])
+
+
+def draw_network_base(canvas: Canvas, plan: dict, network: dict, config: dict) -> None:
+    left = config["margin"]
+    top = config["margin"]
+    right = left + (config["width"] * config["cell"])
+    bottom = top + (config["height"] * config["cell"])
+    canvas.fill_rect(left, top, right, bottom, (255, 255, 252))
+
+    if network.get("polylines"):
+        for polyline in network["polylines"]:
+            style = HIGHWAY_STYLES.get(polyline.get("highway", "residential"), HIGHWAY_STYLES["residential"])
+            points = polyline.get("points", [])
+            if len(points) < 2:
+                continue
+            for previous, current in zip(points, points[1:]):
+                start_x, start_y = grid_center(config, previous["x"], previous["y"])
+                end_x, end_y = grid_center(config, current["x"], current["y"])
+                canvas.draw_line(start_x, start_y, end_x, end_y, style["color"], thickness=style["thickness"])
+    else:
+        inset = max(0, config["cell"] // 5)
+        for cell_entry in network.get("cells", []):
+            x0, y0 = grid_top_left(config, cell_entry["x"], cell_entry["y"])
+            canvas.fill_rect(
+                x0 + inset,
+                y0 + inset,
+                x0 + config["cell"] - inset,
+                y0 + config["cell"] - inset,
+                (120, 124, 132),
+            )
+
+    start = plan["start"]
+    goal = plan["goal"]
+    start_x, start_y = plan_grid_center(config, start["x"], start["y"])
+    goal_x, goal_y = plan_grid_center(config, goal["x"], goal["y"])
     canvas.draw_circle(start_x, start_y, max(2, config["cell"] // 4), PALETTE["start"])
     canvas.draw_circle(goal_x, goal_y, max(2, config["cell"] // 4), PALETTE["goal"])
 
@@ -163,7 +264,7 @@ def draw_expanded(canvas: Canvas, plan: dict, config: dict, count: int) -> None:
     for index, expanded in enumerate(plan["expanded"][:count]):
         ratio = index / total
         color = blend(PALETTE["expanded_a"], PALETTE["expanded_b"], ratio)
-        center_x, center_y = grid_center(config, expanded["x"], expanded["y"])
+        center_x, center_y = plan_grid_center(config, expanded["x"], expanded["y"])
         canvas.draw_circle(center_x, center_y, radius, color)
 
 
@@ -172,13 +273,13 @@ def draw_path(canvas: Canvas, plan: dict, config: dict, count: int) -> None:
         return
     visible = plan["path"]["cells"][:count]
     for previous, current in zip(visible, visible[1:]):
-        start_x, start_y = grid_center(config, previous["x"], previous["y"])
-        end_x, end_y = grid_center(config, current["x"], current["y"])
+        start_x, start_y = plan_grid_center(config, previous["x"], previous["y"])
+        end_x, end_y = plan_grid_center(config, current["x"], current["y"])
         canvas.draw_line(start_x, start_y, end_x, end_y, PALETTE["path"], thickness=max(3, config["cell"] // 6))
 
 
 def draw_vehicle(canvas: Canvas, state: dict, config: dict) -> None:
-    center_x, center_y = grid_center(config, state["x"], state["y"])
+    center_x, center_y = plan_grid_center(config, state["x"], state["y"])
     delta_x, delta_y = HEADING_VECTORS[state["heading"]]
     arrow_scale = config["cell"] * 0.32
     tip_x = int(round(center_x + (delta_x * arrow_scale)))
@@ -190,8 +291,8 @@ def draw_vehicle(canvas: Canvas, state: dict, config: dict) -> None:
     canvas.draw_line(tip_x, tip_y, tip_x + wing, tip_y + wing, PALETTE["vehicle"], thickness=2)
 
 
-def write_svg(plan: dict, output_path: Path) -> None:
-    config = layout(plan)
+def write_svg(plan: dict, output_path: Path, network: Optional[dict] = None) -> None:
+    config = layout(plan, network)
     output_path.parent.mkdir(parents=True, exist_ok=True)
     width = config["image_width"]
     height = config["image_height"]
@@ -202,22 +303,46 @@ def write_svg(plan: dict, output_path: Path) -> None:
 
     path_points = []
     for cell_entry in plan["path"]["cells"]:
-        center_x, center_y = grid_center(config, cell_entry["x"], cell_entry["y"])
+        center_x, center_y = plan_grid_center(config, cell_entry["x"], cell_entry["y"])
         path_points.append(f"{center_x},{center_y}")
 
     obstacle_rects = []
-    for obstacle in plan["obstacles"]:
-        x0, y0 = grid_top_left(config, obstacle["x"], obstacle["y"])
-        obstacle_rects.append(
-            f'<rect x="{x0 + 3}" y="{y0 + 3}" width="{cell - 6}" height="{cell - 6}" rx="4" fill="#1f2937" />'
-        )
+    road_rects = []
+    road_lines = []
+    if network is None:
+        for obstacle in plan["obstacles"]:
+            x0, y0 = plan_grid_top_left(config, obstacle["x"], obstacle["y"])
+            obstacle_rects.append(
+                f'<rect x="{x0 + 3}" y="{y0 + 3}" width="{cell - 6}" height="{cell - 6}" rx="4" fill="#1f2937" />'
+            )
+    else:
+        if network.get("polylines"):
+            for polyline in network["polylines"]:
+                style = HIGHWAY_STYLES.get(polyline.get("highway", "residential"), HIGHWAY_STYLES["residential"])
+                points = []
+                for point in polyline.get("points", []):
+                    center_x, center_y = grid_center(config, point["x"], point["y"])
+                    points.append(f"{center_x},{center_y}")
+                if len(points) >= 2:
+                    color = "#{:02x}{:02x}{:02x}".format(*style["color"])
+                    road_lines.append(
+                        f'<polyline fill="none" stroke="{color}" stroke-width="{style["thickness"]}" '
+                        f'stroke-linecap="round" stroke-linejoin="round" points="{" ".join(points)}" />'
+                    )
+        else:
+            inset = max(0, cell // 5)
+            for cell_entry in network.get("cells", []):
+                x0, y0 = grid_top_left(config, cell_entry["x"], cell_entry["y"])
+                road_rects.append(
+                    f'<rect x="{x0 + inset}" y="{y0 + inset}" width="{cell - inset * 2}" height="{cell - inset * 2}" fill="#7c7f86" />'
+                )
 
     expanded_circles = []
     total = max(len(plan["expanded"]) - 1, 1)
     for index, expanded in enumerate(plan["expanded"]):
         ratio = index / total
         color = "#{:02x}{:02x}{:02x}".format(*blend(PALETTE["expanded_a"], PALETTE["expanded_b"], ratio))
-        center_x, center_y = grid_center(config, expanded["x"], expanded["y"])
+        center_x, center_y = plan_grid_center(config, expanded["x"], expanded["y"])
         expanded_circles.append(
             f'<circle cx="{center_x}" cy="{center_y}" r="{max(2, cell // 8)}" fill="{color}" opacity="0.55" />'
         )
@@ -225,7 +350,7 @@ def write_svg(plan: dict, output_path: Path) -> None:
     heading_markers = []
     stride = max(1, len(plan["path"]["states"]) // 10)
     for state in plan["path"]["states"][::stride]:
-        center_x, center_y = grid_center(config, state["x"], state["y"])
+        center_x, center_y = plan_grid_center(config, state["x"], state["y"])
         delta_x, delta_y = HEADING_VECTORS[state["heading"]]
         tip_x = center_x + int(round(delta_x * cell * 0.28))
         tip_y = center_y - int(round(delta_y * cell * 0.28))
@@ -234,19 +359,30 @@ def write_svg(plan: dict, output_path: Path) -> None:
             f'stroke="#b45309" stroke-width="3" stroke-linecap="round" />'
         )
 
+    grid_lines = ""
+    if network is None:
+        vertical_lines = "".join(
+            f'<line x1="{margin + i * cell}" y1="{margin}" x2="{margin + i * cell}" y2="{margin + grid_height}" />'
+            for i in range(config["width"] + 1)
+        )
+        horizontal_lines = "".join(
+            f'<line x1="{margin}" y1="{margin + i * cell}" x2="{margin + grid_width}" y2="{margin + i * cell}" />'
+            for i in range(config["height"] + 1)
+        )
+        grid_lines = f'<g stroke="#e7dcc4" stroke-width="1">{vertical_lines}{horizontal_lines}</g>'
+
     svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">
   <rect width="100%" height="100%" fill="#fcfbf7" />
-  <rect x="{margin}" y="{margin}" width="{grid_width}" height="{grid_height}" fill="#fffdf6" stroke="#d1c5ae" />
-  <g stroke="#e7dcc4" stroke-width="1">
-    {"".join(f'<line x1="{margin + i * cell}" y1="{margin}" x2="{margin + i * cell}" y2="{margin + grid_height}" />' for i in range(config["width"] + 1))}
-    {"".join(f'<line x1="{margin}" y1="{margin + i * cell}" x2="{margin + grid_width}" y2="{margin + i * cell}" />' for i in range(config["height"] + 1))}
-  </g>
+  <rect x="{margin}" y="{margin}" width="{grid_width}" height="{grid_height}" fill="#fffdfc" stroke="#d1c5ae" />
+  {grid_lines}
+  <g>{"".join(road_lines)}</g>
+  <g>{"".join(road_rects)}</g>
   <g>{"".join(obstacle_rects)}</g>
   <g>{"".join(expanded_circles)}</g>
   <polyline fill="none" stroke="#ea580c" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" points="{' '.join(path_points)}" />
   <g>{"".join(heading_markers)}</g>
-  <circle cx="{grid_center(config, plan["start"]["x"], plan["start"]["y"])[0]}" cy="{grid_center(config, plan["start"]["x"], plan["start"]["y"])[1]}" r="{max(2, cell // 4)}" fill="#0f766e" />
-  <circle cx="{grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[0]}" cy="{grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[1]}" r="{max(2, cell // 4)}" fill="#b91c1c" />
+  <circle cx="{plan_grid_center(config, plan["start"]["x"], plan["start"]["y"])[0]}" cy="{plan_grid_center(config, plan["start"]["x"], plan["start"]["y"])[1]}" r="{max(2, cell // 4)}" fill="#0f766e" />
+  <circle cx="{plan_grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[0]}" cy="{plan_grid_center(config, plan["goal"]["x"], plan["goal"]["y"])[1]}" r="{max(2, cell // 4)}" fill="#b91c1c" />
   <text x="{margin}" y="18" fill="#4b5563" font-family="Arial, sans-serif" font-size="16">LattPath demo: {plan["scenario"]}</text>
   <text x="{margin}" y="{height - 8}" fill="#4b5563" font-family="Arial, sans-serif" font-size="14">
     expanded={plan["stats"]["expanded_states"]} path_cost={plan["stats"]["path_cost"]:.1f} runtime_ms={plan["stats"]["runtime_ms"]:.2f}
@@ -256,9 +392,12 @@ def write_svg(plan: dict, output_path: Path) -> None:
     output_path.write_text(svg, encoding="utf-8")
 
 
-def render_frame(plan: dict, config: dict, expanded_count: int, path_count: int, state_index: int) -> Canvas:
+def render_frame(plan: dict, config: dict, expanded_count: int, path_count: int, state_index: int, network: Optional[dict]) -> Canvas:
     canvas = Canvas(config["image_width"], config["image_height"], PALETTE["background"])
-    draw_base(canvas, plan, config)
+    if network is None:
+        draw_base(canvas, plan, config)
+    else:
+        draw_network_base(canvas, plan, network, config)
     draw_expanded(canvas, plan, config, expanded_count)
     draw_path(canvas, plan, config, path_count)
     if plan["path"]["states"]:
@@ -267,11 +406,11 @@ def render_frame(plan: dict, config: dict, expanded_count: int, path_count: int,
     return canvas
 
 
-def build_video(plan: dict, output_path: Path, fps: int) -> None:
+def build_video(plan: dict, output_path: Path, fps: int, network: Optional[dict] = None) -> None:
     if shutil.which("ffmpeg") is None:
         raise RuntimeError("ffmpeg is required for video output but was not found on PATH.")
 
-    config = layout(plan)
+    config = layout(plan, network)
     expanded_total = len(plan["expanded"])
     path_total = len(plan["path"]["cells"])
     state_total = len(plan["path"]["states"])
@@ -292,7 +431,7 @@ def build_video(plan: dict, output_path: Path, fps: int) -> None:
             path_count = max(1, int(round(path_total * path_ratio))) if path_total else 0
             state_index = int(round((state_total - 1) * path_ratio)) if state_total else 0
 
-            canvas = render_frame(plan, config, expanded_count, path_count, state_index)
+            canvas = render_frame(plan, config, expanded_count, path_count, state_index, network)
             canvas.write_ppm(frame_dir / f"frame_{frame:04d}.ppm")
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -301,6 +440,8 @@ def build_video(plan: dict, output_path: Path, fps: int) -> None:
 
         if output_path.suffix.lower() == ".mp4":
             command = common_prefix + [
+                "-vf",
+                "pad=ceil(iw/2)*2:ceil(ih/2)*2",
                 "-c:v",
                 "libx264",
                 "-pix_fmt",
@@ -348,6 +489,7 @@ def build_video(plan: dict, output_path: Path, fps: int) -> None:
 def main() -> None:
     args = parse_args()
     plan = load_plan(args.plan)
+    network = load_network(args.network or infer_network_path(args.plan, plan))
 
     if not plan["stats"]["success"]:
         raise SystemExit("Planner output indicates failure; refusing to render failed search results.")
@@ -356,9 +498,9 @@ def main() -> None:
         raise SystemExit("Provide --video-output, --still-output, or both.")
 
     if args.still_output:
-        write_svg(plan, args.still_output)
+        write_svg(plan, args.still_output, network)
     if args.video_output:
-        build_video(plan, args.video_output, args.fps)
+        build_video(plan, args.video_output, args.fps, network)
 
 
 if __name__ == "__main__":
