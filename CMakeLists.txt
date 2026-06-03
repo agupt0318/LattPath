@@ -7,21 +7,45 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_executable(
-    lattpath
-    src/main.cpp
+add_library(
+    lattpath_lib
     src/planner.cpp
 )
 
-target_include_directories(lattpath PRIVATE include)
+target_include_directories(lattpath_lib PUBLIC include)
 
-if(MSVC)
-    target_compile_options(lattpath PRIVATE /W4)
-else()
-    target_compile_options(lattpath PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+function(lattpath_enable_warnings target_name)
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /W4)
+    else()
+        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+endfunction()
+
+lattpath_enable_warnings(lattpath_lib)
+
+add_executable(
+    lattpath
+    src/main.cpp
+)
+
+target_link_libraries(lattpath PRIVATE lattpath_lib)
+lattpath_enable_warnings(lattpath)
+
+add_executable(
+    lattpath_tests
+    tests/planner_tests.cpp
+)
+
+target_link_libraries(lattpath_tests PRIVATE lattpath_lib)
+lattpath_enable_warnings(lattpath_tests)
 
 enable_testing()
+
+add_test(
+    NAME lattpath_unit
+    COMMAND lattpath_tests
+)
 
 add_test(
     NAME lattpath_downtown

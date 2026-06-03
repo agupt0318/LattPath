@@ -89,6 +89,17 @@ int normalize_heading(int heading) {
     return normalized;
 }
 
+Pose normalize_pose(Pose pose) {
+    pose.heading = normalize_heading(pose.heading);
+    return pose;
+}
+
+Scenario normalize_scenario(Scenario scenario) {
+    scenario.start = normalize_pose(scenario.start);
+    scenario.goal = normalize_pose(scenario.goal);
+    return scenario;
+}
+
 int heading_distance(int left, int right) {
     const int raw_distance = std::abs(normalize_heading(left) - normalize_heading(right));
     return std::min(raw_distance, static_cast<int>(kHeadingVectors.size()) - raw_distance);
@@ -338,13 +349,15 @@ std::optional<PrimitiveStep> apply_primitive(
     return step;
 }
 
+template <std::size_t PrimitiveCount>
 PathResult reconstruct_pose_path(
     int goal_index,
     int width,
     int height,
     const std::vector<int>& parents,
     const std::vector<int>& parent_primitive_ids,
-    const std::vector<double>& g_scores) {
+    const std::vector<double>& g_scores,
+    const std::array<PrimitiveDefinition, PrimitiveCount>& primitives) {
     std::vector<int> state_chain;
     for (int current = goal_index; current != -1; current = parents[static_cast<std::size_t>(current)]) {
         state_chain.push_back(current);
@@ -365,11 +378,11 @@ PathResult reconstruct_pose_path(
     for (std::size_t index = 1; index < state_chain.size(); ++index) {
         const int state_index = state_chain[index];
         const int primitive_id = parent_primitive_ids[static_cast<std::size_t>(state_index)];
-        if (primitive_id < 0 || primitive_id >= static_cast<int>(kLattPathPrimitives.size())) {
+        if (primitive_id < 0 || primitive_id >= static_cast<int>(primitives.size())) {
             continue;
         }
 
-        const PrimitiveDefinition& primitive = kLattPathPrimitives[static_cast<std::size_t>(primitive_id)];
+        const PrimitiveDefinition& primitive = primitives[static_cast<std::size_t>(primitive_id)];
         path.primitive_names.push_back(primitive.name);
 
         Pose cursor = path.states[index - 1];
@@ -454,7 +467,8 @@ PlanResult plan_pose_search(
                 scenario.height,
                 parents,
                 parent_primitive_ids,
-                g_scores);
+                g_scores,
+                primitives);
             result.stats.success = true;
             result.stats.path_cost = result.path.cost;
             break;
@@ -723,15 +737,16 @@ std::string algorithm_display_name(SearchAlgorithm algorithm) {
 }
 
 PlanResult plan(const Scenario& scenario, SearchAlgorithm algorithm) {
+    const Scenario normalized_scenario = normalize_scenario(scenario);
     switch (algorithm) {
         case SearchAlgorithm::LattPath:
-            return plan_pose_search(scenario, SearchAlgorithm::LattPath, kLattPathPrimitives, true);
+            return plan_pose_search(normalized_scenario, SearchAlgorithm::LattPath, kLattPathPrimitives, true);
         case SearchAlgorithm::AStar:
-            return plan_pose_search(scenario, SearchAlgorithm::AStar, kBaselinePrimitives, true);
+            return plan_pose_search(normalized_scenario, SearchAlgorithm::AStar, kBaselinePrimitives, true);
         case SearchAlgorithm::Dijkstra:
-            return plan_pose_search(scenario, SearchAlgorithm::Dijkstra, kBaselinePrimitives, false);
+            return plan_pose_search(normalized_scenario, SearchAlgorithm::Dijkstra, kBaselinePrimitives, false);
     }
-    return plan_pose_search(scenario, SearchAlgorithm::LattPath, kLattPathPrimitives, true);
+    return plan_pose_search(normalized_scenario, SearchAlgorithm::LattPath, kLattPathPrimitives, true);
 }
 
 BenchmarkResult benchmark_dense_suite(std::size_t iterations) {
