@@ -1,0 +1,14 @@
+{
+  "agents": [
+    {
+      "id": "alpha",
+      "start": {"x": 1, "y": 3, "heading": 0},
+      "goal": {"x": 5, "y": 3, "heading": 0}
+    },
+    {
+      "id": "beta",
+      "start": {"x": 3, "y": 1, "heading": 2},
+      "goal": {"x": 3, "y": 5, "heading": 2}
+    }
+  ]
+}
