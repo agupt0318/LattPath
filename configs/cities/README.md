@@ -7,7 +7,8 @@ Required top-level fields:
 - `city_id`: stable slug used for output prefixes
 - `display_name`: human-readable label for logs and docs
 - `full_bbox`: `{west, south, east, north}` bounding box for the full route
-- `full_grid_width`: raster width used for the full-route scenario
+- `full_grid_width`: planning-raster width used for the full-route scenario
+- `full_display_grid_width` (optional): denser display-grid width used for projected centerline rendering
 - `route`: full-city route definition
 - `district`: smaller multi-agent slice for coordination runs
 - `simulation` (optional): traffic-control and behavior overlay for the district simulation
@@ -35,6 +36,8 @@ Required top-level fields:
 - `stop_signs`: list of `{id, lat, lon, hold_ticks}` entries
 
 The builder snaps those traffic-control seeds to the district grid and writes a `*_controls.json` file next to the district scenario, agents, and network outputs.
+
+When `full_display_grid_width` is present, the generated `*_network.json` keeps the planner-aligned cell metadata at `width`/`height` and also writes a denser `display_grid` plus projected road polylines for rendering. That lets the planner stay on a coarser, routeable raster while the route videos and SVGs use a sharper street-map layer.
 
 Generate a city demo with:
 

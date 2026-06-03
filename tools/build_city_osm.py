@@ -3,6 +3,7 @@
 import argparse
 import json
 from pathlib import Path
+from typing import Optional
 import xml.etree.ElementTree as ET
 
 from build_manhattan_osm import (
@@ -12,7 +13,10 @@ from build_manhattan_osm import (
     crop_cell_stats,
     crop_grid,
     crop_heading_counts,
+    district_display_grid_width,
     download_bbox_recursive,
+    display_grid_width,
+    extract_polylines_from_osm,
     load_city_config,
     load_driving_polylines_from_pbf,
     load_osm,
@@ -51,7 +55,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def apply_output_tag(name: str, output_tag: str | None) -> str:
+def apply_output_tag(name: str, output_tag: Optional[str]) -> str:
     if not output_tag:
         return name
     return f"{name}_{output_tag}"
@@ -65,7 +69,7 @@ def cached_tile_paths(tile_dir: Path, city_id: str) -> list:
     )
 
 
-def build_city_names(city: dict, output_tag: str | None) -> dict:
+def build_city_names(city: dict, output_tag: Optional[str]) -> dict:
     route_name = apply_output_tag(city["route"]["scenario_name"], output_tag)
     district_name = apply_output_tag(city["district"]["scenario_name"], output_tag)
     city_prefix = apply_output_tag(city["city_id"], output_tag)
@@ -148,7 +152,8 @@ def load_custom_network(city: dict, args: argparse.Namespace) -> tuple:
                 tile_paths.extend(download_bbox_recursive(bbox, tile_dir, f"{city['city_id']}_r{row}_c{column}"))
 
         nodes, ways = load_osm(tile_paths)
-        full_grid, _, full_heading_counts, full_cell_stats = rasterize_bbox(nodes, ways, full_bbox, full_grid_width)
+        polylines = extract_polylines_from_osm(nodes, ways)
+        full_grid, _, full_heading_counts, full_cell_stats = rasterize_polylines(polylines, full_bbox, full_grid_width)
         metadata.update({
             "source": "live_tiles",
             "tile_count": len(tile_paths),
@@ -156,7 +161,7 @@ def load_custom_network(city: dict, args: argparse.Namespace) -> tuple:
             "way_count": len(ways),
         })
 
-    return full_grid, full_heading_counts, full_cell_stats, metadata
+    return full_grid, full_heading_counts, full_cell_stats, polylines, metadata
 
 
 def ensure_osmnx_modules() -> tuple:
@@ -253,8 +258,9 @@ def load_osmnx_network(city: dict, args: argparse.Namespace) -> tuple:
         print("Ignoring --pbf-file for the osmnx backend; using cached/downloaded XML tiles instead.", flush=True)
 
     graph, tile_paths, merged_path = load_osmnx_tile_graphs(city, args)
+    polylines = graph_to_polylines(graph)
     full_grid, _, full_heading_counts, full_cell_stats = rasterize_polylines(
-        graph_to_polylines(graph),
+        polylines,
         city["full_bbox"],
         int(city["full_grid_width"]),
     )
@@ -266,14 +272,15 @@ def load_osmnx_network(city: dict, args: argparse.Namespace) -> tuple:
         "edge_count": len(graph.edges),
         "polyline_count": len(graph.edges),
     }
-    return full_grid, full_heading_counts, full_cell_stats, metadata
+    return full_grid, full_heading_counts, full_cell_stats, polylines, metadata
 
 
-def write_city_outputs(city: dict, names: dict, backend: str, args: argparse.Namespace, full_grid: list, full_heading_counts: dict, full_cell_stats: dict, source_metadata: dict) -> None:
+def write_city_outputs(city: dict, names: dict, backend: str, args: argparse.Namespace, full_grid: list, full_heading_counts: dict, full_cell_stats: dict, polylines: list, source_metadata: dict) -> None:
     full_bbox = city["full_bbox"]
     district_bbox = city["district"]["bbox"]
     route = city["route"]
     district = city["district"]
+    full_display_width = display_grid_width(city, len(full_grid[0]))
 
     metadata = {
         "city_id": city["city_id"],
@@ -283,6 +290,8 @@ def write_city_outputs(city: dict, names: dict, backend: str, args: argparse.Nam
         "output_tag": args.output_tag,
         "full_bbox": full_bbox,
         "district_bbox": district_bbox,
+        "planning_grid_width": len(full_grid[0]),
+        "display_grid_width": full_display_width,
         "route_scenario": names["route_scenario"],
         "district_scenario": names["district_scenario"],
         **source_metadata,
@@ -306,9 +315,12 @@ def write_city_outputs(city: dict, names: dict, backend: str, args: argparse.Nam
         len(full_grid),
         full_heading_counts,
         full_cell_stats,
+        polylines,
+        full_display_width,
     )
 
     district_grid, crop_info = crop_grid(full_grid, full_bbox, district_bbox)
+    district_display_width = district_display_grid_width(city, district_bbox, len(district_grid[0]))
     district_heading_counts = crop_heading_counts(full_heading_counts, crop_info)
     district_cell_stats = crop_cell_stats(full_cell_stats, crop_info)
     district_start = point_to_grid(district["agents"][0]["start"], district_bbox, district_grid)
@@ -329,6 +341,8 @@ def write_city_outputs(city: dict, names: dict, backend: str, args: argparse.Nam
         len(district_grid),
         district_heading_counts,
         district_cell_stats,
+        polylines,
+        district_display_width,
     )
 
     simulation = city.get("simulation", {})
@@ -387,11 +401,11 @@ def main() -> None:
     names = build_city_names(city, args.output_tag)
 
     if args.backend == "custom":
-        full_grid, full_heading_counts, full_cell_stats, source_metadata = load_custom_network(city, args)
+        full_grid, full_heading_counts, full_cell_stats, polylines, source_metadata = load_custom_network(city, args)
     else:
-        full_grid, full_heading_counts, full_cell_stats, source_metadata = load_osmnx_network(city, args)
+        full_grid, full_heading_counts, full_cell_stats, polylines, source_metadata = load_osmnx_network(city, args)
 
-    write_city_outputs(city, names, args.backend, args, full_grid, full_heading_counts, full_cell_stats, source_metadata)
+    write_city_outputs(city, names, args.backend, args, full_grid, full_heading_counts, full_cell_stats, polylines, source_metadata)
 
 
 if __name__ == "__main__":

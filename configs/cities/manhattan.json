@@ -8,6 +8,7 @@
     "north": 40.882
   },
   "full_grid_width": 180,
+  "full_display_grid_width": 420,
   "route": {
     "scenario_name": "manhattan_osm",
     "start": {
