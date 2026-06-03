@@ -170,6 +170,30 @@ def serialize_scenario(scenario: dict) -> dict:
     }
 
 
+def primitive_names(primitives: tuple) -> list:
+    return [primitive["name"] for primitive in primitives]
+
+
+def summarize_plan(plan: dict, temporal: bool) -> dict:
+    path = plan["path"]
+    return {
+        "state_representation": "(x, y, heading, t)" if temporal else "(x, y, heading)",
+        "expanded_states": len(plan["expanded"]),
+        "cost": plan["cost"],
+        "uses_wait_primitive": "wait" in path["primitives"],
+        "path": path,
+        "expanded": plan["expanded"],
+    }
+
+
+def summarize_reservations(cell_reservations: dict, edge_reservations: dict) -> dict:
+    return {
+        "reserved_ticks": len(cell_reservations),
+        "reserved_cell_entries": sum(len(cells) for cells in cell_reservations.values()),
+        "reserved_edge_entries": sum(len(edges) for edges in edge_reservations.values()),
+    }
+
+
 def summarize_controls(scenario: dict) -> dict:
     controls = scenario.get("controls", {})
     return {
@@ -980,6 +1004,7 @@ def simulate_independent_astar(scenario: dict, agents: list) -> dict:
             "done_tick": None,
             "pending_waits": 0,
             "prepared_target": None,
+            "plan": summarize_plan(plan, temporal=False),
         })
 
     ticks = 0
@@ -1073,6 +1098,14 @@ def simulate_independent_astar(scenario: dict, agents: list) -> dict:
 
     return {
         "mode": "independent_astar",
+        "lattice": {
+            "planner": "spatial_lattice",
+            "state_representation": "(x, y, heading)",
+            "primitive_set": primitive_names(ASTAR_PRIMITIVES),
+            "wait_primitive_enabled": False,
+            "reservation_model": "none",
+            "expanded_states_total": sum(agent["plan"]["expanded_states"] for agent in planned_agents),
+        },
         "ticks": ticks,
         "conflicts": conflict_count,
         "wait_events": wait_events,
@@ -1085,6 +1118,8 @@ def simulate_independent_astar(scenario: dict, agents: list) -> dict:
                 "goal": agent["goal"],
                 "timeline": agent["timeline"],
                 "done_tick": agent["done_tick"] if agent["done_tick"] is not None else ticks,
+                "plan": agent["plan"],
+                "role": "independent",
             }
             for agent in planned_agents
         ],
@@ -1095,7 +1130,11 @@ def simulate_cooperative_lattpath(scenario: dict, agents: list) -> dict:
     cell_reservations = defaultdict(set)
     edge_reservations = defaultdict(set)
     planned_agents = []
-    ordered_groups, formation_pairs = build_communication_pairs(scenario, agents)
+    if scenario.get("network") or scenario.get("controls"):
+        ordered_groups, formation_pairs = build_communication_pairs(scenario, agents)
+    else:
+        ordered_groups = [(agent, None, None) for agent in agents]
+        formation_pairs = []
     nominal_lengths = []
     for group in ordered_groups:
         leader = group[0]
@@ -1110,50 +1149,56 @@ def simulate_cooperative_lattpath(scenario: dict, agents: list) -> dict:
     control_count = len(controls_for_scenario(scenario).get("traffic_lights", {})) + len(controls_for_scenario(scenario).get("stop_signs", {}))
     planning_horizon = (max(nominal_lengths or [60]) * 20) + (control_count * 20)
 
-    for leader, follower, _side in ordered_groups:
-        leader_plan = plan_spatial(scenario, leader["start"], leader["goal"], LATTPATH_PRIMITIVES)
-        if not leader_plan["success"]:
-            raise RuntimeError(f"Cooperative LattPath failed for {leader['id']}")
-
-        leader_timeline = schedule_spatial_timeline(
+    for leader, follower, side in ordered_groups:
+        leader_plan = plan_temporal(
             scenario,
-            leader_plan["path"]["timeline"],
+            leader["start"],
+            leader["goal"],
+            LATTPATH_PRIMITIVES,
             cell_reservations,
             edge_reservations,
-            automated=True,
-            max_tick=planning_horizon,
+            max_time=planning_horizon,
         )
-        reserve_timeline({"timeline": leader_timeline}, cell_reservations, edge_reservations, hold_until=planning_horizon)
+        if not leader_plan["success"]:
+            raise RuntimeError(f"Cooperative LattPath failed for {leader['id']}")
+        reserve_timeline(leader_plan["path"], cell_reservations, edge_reservations, hold_until=planning_horizon)
         planned_agents.append({
             "id": leader["id"],
             "start": leader["start"],
             "goal": leader["goal"],
-            "timeline": leader_timeline,
-            "done_tick": leader_timeline[-1]["t"],
+            "timeline": leader_plan["path"]["timeline"],
+            "done_tick": leader_plan["path"]["timeline"][-1]["t"],
+            "plan": summarize_plan(leader_plan, temporal=True),
+            "role": "solo" if follower is None else "leader",
         })
 
         if follower is None:
             continue
 
-        follower_plan = plan_spatial(scenario, follower["start"], follower["goal"], LATTPATH_PRIMITIVES)
-        if not follower_plan["success"]:
-            raise RuntimeError(f"Cooperative LattPath failed for {follower['id']}")
-
-        scheduled_follower = schedule_spatial_timeline(
+        preferred_cells = build_preferred_lane(leader_plan["path"]["timeline"], scenario, side)
+        follower_plan = plan_temporal(
             scenario,
-            follower_plan["path"]["timeline"],
+            follower["start"],
+            follower["goal"],
+            LATTPATH_PRIMITIVES,
             cell_reservations,
             edge_reservations,
-            automated=True,
-            max_tick=planning_horizon,
+            preferred_cells=preferred_cells,
+            max_time=planning_horizon,
         )
-        reserve_timeline({"timeline": scheduled_follower}, cell_reservations, edge_reservations, hold_until=planning_horizon)
+        if not follower_plan["success"]:
+            raise RuntimeError(f"Cooperative LattPath failed for {follower['id']}")
+        reserve_timeline(follower_plan["path"], cell_reservations, edge_reservations, hold_until=planning_horizon)
         planned_agents.append({
             "id": follower["id"],
             "start": follower["start"],
             "goal": follower["goal"],
-            "timeline": scheduled_follower,
-            "done_tick": scheduled_follower[-1]["t"],
+            "timeline": follower_plan["path"]["timeline"],
+            "done_tick": follower_plan["path"]["timeline"][-1]["t"],
+            "plan": summarize_plan(follower_plan, temporal=True),
+            "role": "follower",
+            "preferred_side": side,
+            "preferred_cells": len(preferred_cells),
         })
 
     max_tick = max(agent["done_tick"] for agent in planned_agents)
@@ -1168,6 +1213,17 @@ def simulate_cooperative_lattpath(scenario: dict, agents: list) -> dict:
 
     return {
         "mode": "cooperative_lattpath",
+        "lattice": {
+            "planner": "temporal_lattice",
+            "state_representation": "(x, y, heading, t)",
+            "primitive_set": primitive_names(LATTPATH_PRIMITIVES) + ["wait"],
+            "wait_primitive_enabled": True,
+            "reservation_model": "cell_and_edge",
+            "planning_horizon": planning_horizon,
+            "expanded_states_total": sum(agent["plan"]["expanded_states"] for agent in planned_agents),
+            "agents_with_wait": sum(1 for agent in planned_agents if agent["plan"]["uses_wait_primitive"]),
+            "reservations": summarize_reservations(cell_reservations, edge_reservations),
+        },
         "ticks": max_tick,
         "conflicts": 0,
         "wait_events": sum(count_wait_steps(agent["timeline"]) for agent in planned_agents),
